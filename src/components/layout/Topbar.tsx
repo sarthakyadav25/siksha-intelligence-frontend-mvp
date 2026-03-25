@@ -1,11 +1,11 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { ChevronRight, LogOut, User } from "lucide-react";
+import { ChevronRight, LogOut } from "lucide-react";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
-import { logout } from "@/store/slices/authSlice";
-import { api } from "@/lib/axios";
+import { logoutUser } from "@/store/slices/authSlice";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { UserAvatar } from "@/components/shared/UserAvatar";
 
 const breadcrumbMap: Record<string, string> = {
   dashboard: "Dashboard",
@@ -20,7 +20,6 @@ export default function Topbar() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const user = useAppSelector((s) => s.auth.user);
-  const refreshToken = useAppSelector((s) => s.auth.refreshToken);
 
   // Build breadcrumbs from path
   const segments = location.pathname
@@ -29,23 +28,10 @@ export default function Topbar() {
     .filter((s) => s !== "dashboard" && s !== "admin");
 
   const handleLogout = async () => {
-    try {
-      if (refreshToken) {
-        await api.post("/auth/logout", { refreshToken });
-      }
-    } catch {
-      // ignore
-    } finally {
-      dispatch(logout());
-      navigate("/login", { replace: true });
-      toast.success("Logged out successfully");
-    }
+    await dispatch(logoutUser());
+    navigate("/login", { replace: true });
+    toast.success("Logged out successfully");
   };
-
-  // Initials for avatar
-  const initials = user?.username
-    ? user.username.slice(0, 2).toUpperCase()
-    : "AD";
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-card/80 px-6 backdrop-blur-sm">
@@ -86,9 +72,11 @@ export default function Topbar() {
         </div>
 
         {/* Avatar */}
-        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary ring-2 ring-primary/20">
-          {initials}
-        </div>
+        <UserAvatar 
+          name={user?.username} 
+          profileUrl={user?.profileUrl} 
+          className="h-9 w-9 ring-2 ring-primary/20" 
+        />
 
         {/* Logout */}
         <Button

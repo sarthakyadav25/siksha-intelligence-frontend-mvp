@@ -62,7 +62,7 @@ export default function LoginPage() {
     defaultValues: {
       username: '',
       password: '',
-      rememberMe: false,
+      rememberMe: true,
     },
     mode: 'onSubmit',
   })

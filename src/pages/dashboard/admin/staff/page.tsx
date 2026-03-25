@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import {
   Plus,
   Loader2,
@@ -97,7 +98,8 @@ export default function StaffPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [bulkOpen, setBulkOpen] = useState(false);
   const [editingStaff, setEditingStaff] = useState<StaffSummaryDTO | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<StaffSummaryDTO | null>(null);
+  const [pendingEditData, setPendingEditData] = useState<StaffFormData | null>(null);
+  const [actionTarget, setActionTarget] = useState<{ staff: StaffSummaryDTO; action: 'activate' | 'block' } | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [selectedStaffType, setSelectedStaffType] = useState<StaffType>("TEACHER");
 
@@ -183,83 +185,102 @@ export default function StaffPage() {
   };
 
   // ── Submit ────────────────────────────────────────────────────────
-  const onSubmit = async (data: StaffFormData) => {
+  const onSubmit = (data: StaffFormData) => {
+    if (editingStaff) {
+      setPendingEditData(data); // triggers confirmation dialog
+    } else {
+      handleCreate(data);
+    }
+  };
+
+  const handleEdit = async (data: StaffFormData) => {
+    if (!editingStaff) return;
     setSubmitting(true);
     try {
-      if (editingStaff) {
-        // Use the new dedicated PUT endpoint: /auth/admin/users/staff/{uuid}
-        await adminService.updateStaff(editingStaff.uuid, {
-          email: data.email || undefined,
-          firstName: data.firstName || undefined,
-          middleName: data.middleName || undefined,
-          lastName: data.lastName || undefined,
-          gender: (data.gender as never) || undefined,
-          dateOfBirth: data.dateOfBirth || undefined,
-          jobTitle: data.jobTitle || undefined,
-          hireDate: data.hireDate || undefined,
-          officeLocation: data.officeLocation || undefined,
-          staffType: data.staffType || undefined,
+      await adminService.updateStaff(editingStaff.uuid, {
+        email: data.email || undefined,
+        firstName: data.firstName || undefined,
+        middleName: data.middleName || undefined,
+        lastName: data.lastName || undefined,
+        gender: (data.gender as never) || undefined,
+        dateOfBirth: data.dateOfBirth || undefined,
+        jobTitle: data.jobTitle || undefined,
+        hireDate: data.hireDate || undefined,
+        officeLocation: data.officeLocation || undefined,
+        staffType: data.staffType || undefined,
+      });
+      toast.success("Staff member updated successfully");
+      await fetchStaff(page, search, staffTypeFilter);
+      setFormOpen(false);
+      setPendingEditData(null);
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: string }; message?: string };
+      const msg = error?.response?.data ?? error?.message ?? "Failed to save staff";
+      toast.error(typeof msg === "string" ? msg : "Failed to save staff");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleCreate = async (data: StaffFormData) => {
+    setSubmitting(true);
+    try {
+      if (data.staffType === "TEACHER") {
+        await adminService.createTeacher({
+          username: data.username,
+          email: data.email,
+          initialPassword: data.initialPassword || undefined,
+          firstName: data.firstName,
+          middleName: data.middleName,
+          lastName: data.lastName,
+          jobTitle: data.jobTitle,
+          hireDate: data.hireDate,
+          officeLocation: data.officeLocation,
+          gender: data.gender as never,
+          dateOfBirth: data.dateOfBirth,
+          staffType: data.staffType,
+          specializations: data.specializations ? [data.specializations] : [],
+          certifications: data.certifications ? [data.certifications] : [],
+          yearsOfExperience: data.yearsOfExperience,
+          educationLevel: data.educationLevel,
         });
-        toast.success("Staff member updated successfully");
-        await fetchStaff(page, search, staffTypeFilter);
-      } else {
-        if (data.staffType === "TEACHER") {
-          await adminService.createTeacher({
-            username: data.username,
-            email: data.email,
-            initialPassword: data.initialPassword || undefined,
-            firstName: data.firstName,
-            middleName: data.middleName,
-            lastName: data.lastName,
-            jobTitle: data.jobTitle,
-            hireDate: data.hireDate,
-            officeLocation: data.officeLocation,
-            gender: data.gender as never,
-            dateOfBirth: data.dateOfBirth,
-            staffType: data.staffType,
-            specializations: data.specializations ? [data.specializations] : [],
-            certifications: data.certifications ? [data.certifications] : [],
-            yearsOfExperience: data.yearsOfExperience,
-            educationLevel: data.educationLevel,
-          });
-        } else if (data.staffType === "PRINCIPAL") {
-          await adminService.createPrincipal({
-            username: data.username,
-            email: data.email,
-            initialPassword: data.initialPassword || undefined,
-            firstName: data.firstName,
-            middleName: data.middleName,
-            lastName: data.lastName,
-            jobTitle: data.jobTitle,
-            hireDate: data.hireDate,
-            officeLocation: data.officeLocation,
-            gender: data.gender as never,
-            dateOfBirth: data.dateOfBirth,
-            staffType: data.staffType,
-            schoolLevelManaged: data.schoolLevelManaged as never,
-            administrativeCertifications: data.adminCertifications ? [data.adminCertifications] : [],
-          });
-        } else if (data.staffType === "LIBRARIAN") {
-          await adminService.createLibrarian({
-            username: data.username,
-            email: data.email,
-            initialPassword: data.initialPassword || undefined,
-            firstName: data.firstName,
-            middleName: data.middleName,
-            lastName: data.lastName,
-            jobTitle: data.jobTitle,
-            hireDate: data.hireDate,
-            officeLocation: data.officeLocation,
-            gender: data.gender as never,
-            dateOfBirth: data.dateOfBirth,
-            staffType: data.staffType,
-            hasMlisDegree: data.hasMlisDegree,
-          });
-        }
-        toast.success("Staff member hired successfully");
-        await fetchStaff(0, search, staffTypeFilter);
-        setPage(0);
+      } else if (data.staffType === "PRINCIPAL") {
+        await adminService.createPrincipal({
+          username: data.username,
+          email: data.email,
+          initialPassword: data.initialPassword || undefined,
+          firstName: data.firstName,
+          middleName: data.middleName,
+          lastName: data.lastName,
+          jobTitle: data.jobTitle,
+          hireDate: data.hireDate,
+          officeLocation: data.officeLocation,
+          gender: data.gender as never,
+          dateOfBirth: data.dateOfBirth,
+          staffType: data.staffType,
+          schoolLevelManaged: data.schoolLevelManaged as never,
+          administrativeCertifications: data.adminCertifications ? [data.adminCertifications] : [],
+        });
+      } else if (data.staffType === "LIBRARIAN") {
+        await adminService.createLibrarian({
+          username: data.username,
+          email: data.email,
+          initialPassword: data.initialPassword || undefined,
+          firstName: data.firstName,
+          middleName: data.middleName,
+          lastName: data.lastName,
+          jobTitle: data.jobTitle,
+          hireDate: data.hireDate,
+          officeLocation: data.officeLocation,
+          gender: data.gender as never,
+          dateOfBirth: data.dateOfBirth,
+          staffType: data.staffType,
+          hasMlisDegree: data.hasMlisDegree,
+        });
       }
+      toast.success("Staff member hired successfully");
+      await fetchStaff(0, search, staffTypeFilter);
+      setPage(0);
       setFormOpen(false);
     } catch (err: unknown) {
       const error = err as { response?: { data?: string }; message?: string };
@@ -270,13 +291,24 @@ export default function StaffPage() {
     }
   };
 
-  // ── Delete ────────────────────────────────────────────────────────
-  const handleDelete = async () => {
-    if (!deleteTarget) return;
-    setStaff((prev) => prev.filter((s) => s.staffId !== deleteTarget.staffId));
-    setTotalElements((n) => n - 1);
-    toast.success("Staff removed from view (no backend delete endpoint yet)");
-    setDeleteTarget(null);
+  // ── Toggle Activation ────────────────────────────────────────────────────────
+  const handleToggleActive = async () => {
+    if (!actionTarget) return;
+    setSubmitting(true);
+    const { staff: s, action } = actionTarget;
+    try {
+      const isActive = action === "activate";
+      await adminService.toggleStaffActivation(s.uuid, isActive);
+      toast.success(`${s.firstName} ${s.lastName} has been ${isActive ? "activated" : "blocked"}`);
+      setActionTarget(null);
+      await fetchStaff(page, search, staffTypeFilter);
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: string }; message?: string };
+      const msg = error?.response?.data ?? error?.message ?? `Failed to ${action} staff member`;
+      toast.error(typeof msg === "string" ? msg : `Failed to ${action} staff member`);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   // ── Bulk upload complete ──────────────────────────────────────────
@@ -383,7 +415,6 @@ export default function StaffPage() {
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">#</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Name</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground hidden md:table-cell">Username</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground hidden lg:table-cell">Email</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Job Title</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground hidden md:table-cell">Type</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Status</th>
@@ -400,13 +431,12 @@ export default function StaffPage() {
                     {page * PAGE_SIZE + idx + 1}
                   </td>
                   <td className="px-4 py-3 font-medium text-foreground">
-                    {s.firstName} {s.lastName}
+                    <Link to={`/dashboard/admin/users/staff/${s.uuid}`} className="hover:underline text-primary transition-colors">
+                      {s.firstName} {s.lastName}
+                    </Link>
                   </td>
                   <td className="px-4 py-3 text-muted-foreground hidden md:table-cell">
                     {s.username}
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground hidden lg:table-cell truncate max-w-[200px]">
-                    {s.email}
                   </td>
                   <td className="px-4 py-3 text-muted-foreground">{s.jobTitle}</td>
                   <td className="px-4 py-3 hidden md:table-cell">
@@ -416,27 +446,47 @@ export default function StaffPage() {
                   </td>
                   <td className="px-4 py-3">
                     <StatusBadge variant={s.active ? "active" : "inactive"}>
-                      {s.active ? "Active" : "Inactive"}
+                      {s.active ? "Active" : "BLOCKED"}
                     </StatusBadge>
                   </td>
                   <td className="px-4 py-3 text-right">
                     <div className="flex items-center justify-end gap-2">
+                      <Link to={`/dashboard/admin/users/staff/${s.uuid}`}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 px-2 text-xs text-muted-foreground hover:text-primary"
+                        >
+                          View
+                        </Button>
+                      </Link>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => openEdit(s)}
-                        className="h-7 px-2 text-xs"
+                        className="h-7 px-2 text-xs text-muted-foreground hover:text-primary"
                       >
                         Edit
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setDeleteTarget(s)}
-                        className="h-7 px-2 text-xs text-destructive hover:text-destructive"
-                      >
-                        Remove
-                      </Button>
+                      {s.active ? (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setActionTarget({ staff: s, action: 'block' })}
+                          className="h-7 w-[72px] px-2 text-xs text-destructive hover:text-destructive"
+                        >
+                          Block
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setActionTarget({ staff: s, action: 'activate' })}
+                          className="h-7 w-[72px] px-2 text-xs text-green-600 hover:text-green-700"
+                        >
+                          Activate
+                        </Button>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -637,14 +687,27 @@ export default function StaffPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete confirmation */}
+      {/* Action confirmation (Block / Activate) */}
       <ConfirmDialog
-        open={!!deleteTarget}
-        onOpenChange={(open) => !open && setDeleteTarget(null)}
-        title="Remove Staff Member"
-        description={`Are you sure you want to remove ${deleteTarget?.firstName} ${deleteTarget?.lastName}?`}
-        confirmLabel="Remove"
-        onConfirm={handleDelete}
+        open={!!actionTarget}
+        onOpenChange={(open) => !open && setActionTarget(null)}
+        title={actionTarget?.action === 'activate' ? "Activate Staff Member" : "Block Staff Member"}
+        description={`Are you sure you want to ${actionTarget?.action} ${actionTarget?.staff.firstName}?`}
+        confirmLabel={actionTarget?.action === 'activate' ? "Activate" : "Block"}
+        onConfirm={handleToggleActive}
+        loading={submitting}
+        destructive={actionTarget?.action === 'block'}
+      />
+
+      <ConfirmDialog
+        open={!!pendingEditData}
+        onOpenChange={(open) => !open && setPendingEditData(null)}
+        title="Confirm Edit"
+        description={`Are you sure you want to save these changes for ${editingStaff?.firstName}?`}
+        confirmLabel="Save Changes"
+        onConfirm={() => { if (pendingEditData) handleEdit(pendingEditData); }}
+        loading={submitting}
+        destructive={false}
       />
     </motion.div>
   );

@@ -1,28 +1,18 @@
 import { useAppSelector, useAppDispatch } from '@/store/hooks'
-import { logout } from '@/store/slices/authSlice'
+import { logoutUser } from '@/store/slices/authSlice'
 import { useNavigate } from 'react-router-dom'
 import { LogOut } from 'lucide-react'
-import { api } from '@/lib/axios'
 import { toast } from 'sonner'
 
 export default function SuperAdminDashboard() {
   const user = useAppSelector((s) => s.auth.user)
-  const refreshToken = useAppSelector((s) => s.auth.refreshToken)
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
 
   const handleLogout = async () => {
-    try {
-      if (refreshToken) {
-        await api.post('/auth/logout', { refreshToken })
-      }
-    } catch (err) {
-      console.error('Logout API error:', err)
-    } finally {
-      dispatch(logout())
-      navigate('/login', { replace: true })
-      toast.success('Logged out successfully')
-    }
+    await dispatch(logoutUser())
+    navigate('/login', { replace: true })
+    toast.success('Logged out successfully')
   }
 
   return (

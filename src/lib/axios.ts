@@ -133,6 +133,15 @@ const refreshClient = axios.create({
   withCredentials: true,
 })
 
+refreshClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
+  const tenantId = getTenantIdFromHostname(window.location.hostname)
+  config.headers = config.headers ?? {}
+  if (tenantId) {
+    config.headers['X-Tenant-ID'] = tenantId
+  }
+  return config
+})
+
 api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   // Multi-tenancy: tenant is derived from the subdomain/hostname and passed as a header.
   const tenantId = getTenantIdFromHostname(window.location.hostname)
@@ -196,7 +205,7 @@ const refreshAccessTokenOnce = async (): Promise<string> => {
   if (!refreshPromise) {
     const refreshToken = getStoredRefreshToken()
     if (!refreshToken) {
-      throw new Error('Refresh failed: no refresh token stored (user must log in with Remember Me)')
+      throw new Error('NO_REFRESH_TOKEN')
     }
 
     // DO NOT send the Authorization header here.
@@ -231,8 +240,14 @@ api.interceptors.response.use(
 
     const url = String(originalConfig.url ?? '')
 
-    // Avoid infinite loops on auth endpoints.
-    if (url.includes('/login') || url.includes('/refresh')) {
+    // Pass authentication errors from the login endpoint directly back to the component
+    // without triggering the global "Session Expired" logout flow.
+    if (url.includes('/login')) {
+      return Promise.reject(error)
+    }
+
+    // Safety net: if an explicit refresh call was made and failed with 401
+    if (url.includes('/refresh')) {
       authHandlers?.logoutAndRedirect()
       return Promise.reject(error)
     }
@@ -263,11 +278,14 @@ api.interceptors.response.use(
     } catch (refreshError) {
       flushQueueFailure(refreshError)
 
-      // Only force logout if the refresh endpoint itself returned 401
-      // (meaning the refresh token is truly invalid/expired).
-      // A 500 on the refresh endpoint is a server-side bug — don't punish the user.
+      // Only force logout if there is NO refresh token available,
+      // OR if the refresh endpoint itself returned a 4xx error (e.g., 401, 403, 404).
+      // A 500 on the refresh endpoint is a backend bug, so don't punish the user.
+      const isMissingToken = refreshError instanceof Error && refreshError.message === 'NO_REFRESH_TOKEN'
       const refreshStatus = (refreshError as AxiosError)?.response?.status
-      if (refreshStatus === 401 || refreshStatus === 403) {
+      const isClientError = refreshStatus !== undefined && refreshStatus >= 400 && refreshStatus < 500
+      
+      if (isMissingToken || isClientError) {
         authHandlers?.logoutAndRedirect()
       }
 

@@ -21,6 +21,7 @@ import { parseExcelFile } from "./utils/parseExcel";
 import { fetchSse } from "./utils/fetchSse";
 import { submitBulkImport, buildSseUrl } from "./services/bulkUploadApi";
 import { downloadCsvTemplate } from "./utils/csvTemplate";
+import { validateCsvData } from "./utils/csvValidation";
 import FileDropzone from "./components/FileDropzone";
 import TableShimmer from "./components/TableShimmer";
 import DataPreviewTable from "./components/DataPreviewTable";
@@ -61,11 +62,11 @@ export default function BulkDataUpload({
     try {
       const [parsedData] = await Promise.all([parseExcelFile(file), shimmerDelay]);
 
-      // FUTURE UPDATE: Re-enable client-side header validation once backend
-      // template download endpoint is in place and template columns are finalised.
-      // const template = getTemplateForUserType(userType);
-      // const headerError = validateCsvHeaders(parsedData.headers, template);
-      // if (headerError) { ... }
+      // Client-side CSV validation logic mapping to backend's CsvValidationHelper
+      const validationError = validateCsvData(userType, parsedData);
+      if (validationError) {
+        throw new Error(validationError);
+      }
 
       setState({ phase: "preview", file, data: parsedData, errorMessage: null, report: null });
     } catch (error) {
@@ -295,7 +296,7 @@ export default function BulkDataUpload({
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0 }}
-            className="flex flex-col items-center gap-4 rounded-xl border border-border bg-card p-10 text-center"
+            className="flex flex-col items-center gap-4 rounded-xl border border-border bg-card p-6 w-full text-center"
           >
             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-green-500/10">
               <CheckCircle2 className="h-7 w-7 text-green-600 dark:text-green-400" />
@@ -315,19 +316,69 @@ export default function BulkDataUpload({
                       {state.report.failureCount} record{state.report.failureCount !== 1 ? "s" : ""} failed to import.
                     </p>
                   )}
-                  {state.report.errorMessages.length > 0 && (
-                    <div className="mx-auto mt-3 max-w-md rounded-lg border border-destructive/20 bg-destructive/5 p-3 text-left">
-                      <p className="mb-1.5 text-xs font-semibold text-destructive">Error Details:</p>
-                      <ul className="max-h-32 space-y-0.5 overflow-y-auto text-xs text-muted-foreground">
-                        {state.report.errorMessages.map((msg, i) => <li key={i}>• {msg}</li>)}
-                      </ul>
-                    </div>
-                  )}
                 </div>
               ) : (
                 <p className="mt-1 text-sm text-muted-foreground">Records have been successfully imported.</p>
               )}
             </div>
+
+            {/* Detailed Row-by-Row Report */}
+            {state.data?.rows && state.data.rows.length > 0 && (
+              <div className="mt-4 w-full max-h-[350px] overflow-auto rounded-lg border bg-background text-left shadow-sm">
+                <table className="w-full text-sm">
+                  <thead className="sticky top-0 z-10 bg-muted/95 backdrop-blur text-muted-foreground w-full shadow-sm">
+                    <tr>
+                      <th className="px-4 py-2.5 font-medium w-16 text-center border-b">Row</th>
+                      <th className="px-4 py-2.5 font-medium border-b">Record Identifier</th>
+                      <th className="px-4 py-2.5 font-medium w-32 border-b">Status</th>
+                      <th className="px-4 py-2.5 font-medium border-b w-1/2">Details</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/50">
+                    {state.data.rows.map((r, i) => {
+                      const rowNum = i + 1; // 1-indexed to match SSE
+                      const status = rowProgress.get(rowNum);
+                      
+                      // Fallback: If SSE missed it, check the report's errorMessages array
+                      const fallbackError = Array.isArray(state.report?.errorMessages) 
+                        ? state.report.errorMessages.find(
+                            (msg) => msg.startsWith(`Row ${rowNum}:`) || msg.startsWith(`Row ${rowNum} `)
+                          )
+                        : undefined;
+                      
+                      const errorText = status?.kind === "failure" ? status.error : fallbackError;
+                      const isSuccess = !errorText; // If no error text exists, it succeeded
+                      
+                      // First name + last name usually in column 0 and 1
+                      const identifier = r[0] ? `${r[0]} ${r[1] ?? ""}`.trim() : `Row ${rowNum}`;
+
+                      return (
+                        <tr key={rowNum} className={isSuccess ? "bg-green-500/5 hover:bg-green-500/10 transition-colors" : "bg-destructive/5 hover:bg-destructive/10 transition-colors"}>
+                          <td className="px-4 py-3 text-center text-muted-foreground">{rowNum}</td>
+                          <td className="px-4 py-3 font-medium truncate max-w-[200px]" title={identifier}>{identifier}</td>
+                          <td className="px-4 py-3">
+                            {isSuccess ? (
+                              <span className="inline-flex items-center gap-1.5 rounded-full bg-green-500/20 px-2.5 py-0.5 text-xs font-medium text-green-700 dark:text-green-400">
+                                <CheckCircle2 className="h-3 w-3" />
+                                Success
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1.5 rounded-full bg-destructive/20 px-2.5 py-0.5 text-xs font-medium text-destructive">
+                                <AlertTriangle className="h-3 w-3" />
+                                Failed
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-xs text-muted-foreground">
+                            {errorText || "Imported successfully."}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
             <Button variant="outline" onClick={handleReset} className="gap-2">
               <RotateCcw className="h-4 w-4" />
               Upload Another File

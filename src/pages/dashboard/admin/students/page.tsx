@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import {
   Plus,
   Loader2,
@@ -82,13 +83,16 @@ export default function StudentsPage() {
   const [loading, setLoading] = useState(true);
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
+  const [classFilter, setClassFilter] = useState<string>("");
+  const [sectionFilter, setSectionFilter] = useState<string>("");
   const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // ── Dialog state ──────────────────────────────────────────────────
   const [formOpen, setFormOpen] = useState(false);
   const [bulkOpen, setBulkOpen] = useState(false);
   const [editingStudent, setEditingStudent] = useState<StudentSummaryDTO | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<StudentSummaryDTO | null>(null);
+  const [pendingEditData, setPendingEditData] = useState<StudentFormData | null>(null);
+  const [actionTarget, setActionTarget] = useState<{ student: StudentSummaryDTO; action: 'activate' | 'block' } | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   // ── Cascading class → section dropdowns ──────────────────────────
@@ -115,21 +119,80 @@ export default function StudentsPage() {
     },
   });
 
-  // ── Fetch students (server-side) ──────────────────────────────────
   const fetchStudents = useCallback(
-    async (pageNum: number, searchQuery: string) => {
+    async (pageNum: number, searchQuery: string, reqClassFilter: string, reqSectionFilter: string) => {
       setLoading(true);
       try {
+        // We fetch a large batch to handle filtering, searching, and sorting locally.
         const res = await adminService.listStudents({
-          page: pageNum,
-          size: PAGE_SIZE,
-          search: searchQuery || undefined,
-          sortBy: "firstName",
-          sortDir: "asc",
+          page: 0,
+          size: 100, // Backend caps at 100
         });
-        setStudents(res.data.content);
-        setTotalElements(res.data.totalElements);
-        setTotalPages(res.data.totalPages);
+        
+        let data = res.data.content;
+        
+        // Fetch remaining pages if there's more than 100 students
+        if (res.data.totalPages > 1) {
+          const promises = [];
+          for (let i = 1; i < res.data.totalPages; i++) {
+            promises.push(
+              adminService.listStudents({ page: i, size: 100 }).then((r) => r.data.content)
+            );
+          }
+          const otherPages = await Promise.all(promises);
+          data = data.concat(...otherPages);
+        }
+        
+        // 1. Local Search Filter
+        if (searchQuery) {
+          const q = searchQuery.toLowerCase();
+          data = data.filter(s => 
+            s.firstName?.toLowerCase().includes(q) ||
+            s.lastName?.toLowerCase().includes(q) ||
+            s.email?.toLowerCase().includes(q) ||
+            s.enrollmentNumber?.toLowerCase().includes(q)
+          );
+        }
+
+        // 2. Local Class Filter (reqClassFilter is now the exact class name like "Class 1")
+        if (reqClassFilter) {
+          data = data.filter(s => s.className === reqClassFilter);
+        }
+
+        // 3. Local Section Filter
+        if (reqSectionFilter) {
+          data = data.filter(s => s.sectionName === reqSectionFilter);
+        }
+        
+        // 4. Local Multi-Sort: Classwise then Rollwise
+        data = [...data].sort((a, b) => {
+          const classA = a.className || "";
+          const classB = b.className || "";
+          if (classA !== classB) {
+            return classA.localeCompare(classB, undefined, { numeric: true });
+          }
+          const rollA = a.rollNo ?? 999999;
+          const rollB = b.rollNo ?? 999999;
+          return rollA - rollB;
+        });
+
+        // 5. Local Pagination
+        const total = data.length;
+        const totalPagesCount = Math.ceil(total / PAGE_SIZE) || 1;
+        const safePageNum = Math.min(pageNum, totalPagesCount - 1);
+        
+        const startIdx = safePageNum * PAGE_SIZE;
+        const paginatedData = data.slice(startIdx, startIdx + PAGE_SIZE);
+        
+        setStudents(paginatedData);
+        setTotalElements(total);
+        setTotalPages(totalPagesCount);
+        
+        // If the current page was out of bounds due to filtering, aggressively reset to valid page
+        if (safePageNum !== pageNum) {
+           setPage(safePageNum);
+        }
+
       } catch {
         toast.error("Failed to load students");
       } finally {
@@ -140,8 +203,8 @@ export default function StudentsPage() {
   );
 
   useEffect(() => {
-    fetchStudents(page, search);
-  }, [fetchStudents, page, search]);
+    fetchStudents(page, search, classFilter, sectionFilter);
+  }, [fetchStudents, page, search, classFilter, sectionFilter]);
 
   // ── Fetch classes on mount — sections are embedded in each class ──
   useEffect(() => {
@@ -150,8 +213,8 @@ export default function StudentsPage() {
       .getClasses()
       .then((res) => {
         if (!mounted) return;
-        // Sort classes alphabetically by name
-        const sorted = [...res.data].sort((a, b) => a.name.localeCompare(b.name));
+        // Sort classes alphabetically by name (numeric sort for "Class 2" before "Class 10")
+        const sorted = [...res.data].sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
         setClasses(sorted);
       })
       .catch(() => {});
@@ -182,6 +245,13 @@ export default function StudentsPage() {
     }, 400);
   };
 
+  // ── Filter by class ──────────────────────────────────────────────
+  const handleClassFilterChange = (val: string) => {
+    setClassFilter(val === "ALL" ? "" : val);
+    setSectionFilter(""); // reset section when class changes
+    setPage(0);
+  };
+
   // ── Open create / edit dialog ─────────────────────────────────────
   const openCreate = () => {
     setEditingStudent(null);
@@ -210,43 +280,61 @@ export default function StudentsPage() {
   };
 
   // ── Submit ────────────────────────────────────────────────────────
-  const onSubmit = async (data: StudentFormData) => {
+  const onSubmit = (data: StudentFormData) => {
+    if (editingStudent) {
+      setPendingEditData(data); // triggers confirmation dialog
+    } else {
+      handleCreate(data);
+    }
+  };
+
+  const handleEdit = async (data: StudentFormData) => {
+    if (!editingStudent) return;
     setSubmitting(true);
     try {
-      if (editingStudent) {
-        // Use the new dedicated PUT endpoint: /auth/admin/users/student/{uuid}
-        await adminService.updateStudent(editingStudent.uuid, {
-          email: data.email || undefined,
-          firstName: data.firstName || undefined,
-          middleName: data.middleName || undefined,
-          lastName: data.lastName || undefined,
-          gender: (data.gender as never) || undefined,
-          dateOfBirth: data.dateOfBirth || undefined,
-          enrollmentNumber: data.enrollmentNumber || undefined,
-          rollNo: data.rollNo || undefined,
-          // Only send sectionId if admin actually picked a new one
-          sectionId: data.sectionId || undefined,
-        });
-        toast.success("Student updated successfully");
-        await fetchStudents(page, search);
-      } else {
-        await adminService.createStudent({
-          username: data.username,
-          email: data.email,
-          firstName: data.firstName,
-          middleName: data.middleName,
-          lastName: data.lastName,
-          rollNo: data.rollNo!, // UI enforces this field in create mode
-          sectionId: data.sectionId!, // UI enforces this field in create mode
-          gender: data.gender as never,
-          dateOfBirth: data.dateOfBirth || undefined,
-          enrollmentNumber: data.enrollmentNumber || data.username,
-          initialPassword: data.initialPassword || undefined,
-        });
-        toast.success("Student enrolled successfully");
-        await fetchStudents(0, search);
-        setPage(0);
-      }
+      await adminService.updateStudent(editingStudent.uuid, {
+        email: data.email || undefined,
+        firstName: data.firstName || undefined,
+        middleName: data.middleName || undefined,
+        lastName: data.lastName || undefined,
+        gender: (data.gender as never) || undefined,
+        dateOfBirth: data.dateOfBirth || undefined,
+        enrollmentNumber: data.enrollmentNumber || undefined,
+        rollNo: data.rollNo || undefined,
+        sectionId: data.sectionId || undefined,
+      });
+      toast.success("Student updated successfully");
+      await fetchStudents(page, search, classFilter, sectionFilter);
+      setFormOpen(false);
+      setPendingEditData(null);
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: string }; message?: string };
+      const msg = error?.response?.data ?? error?.message ?? "Failed to save student";
+      toast.error(typeof msg === "string" ? msg : "Failed to save student");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleCreate = async (data: StudentFormData) => {
+    setSubmitting(true);
+    try {
+      await adminService.createStudent({
+        username: data.username,
+        email: data.email,
+        firstName: data.firstName,
+        middleName: data.middleName,
+        lastName: data.lastName,
+        rollNo: data.rollNo!, // UI enforces this field in create mode
+        sectionId: data.sectionId!, // UI enforces this field in create mode
+        gender: data.gender as never,
+        dateOfBirth: data.dateOfBirth || undefined,
+        enrollmentNumber: data.enrollmentNumber || data.username,
+        initialPassword: data.initialPassword || undefined,
+      });
+      toast.success("Student enrolled successfully");
+      await fetchStudents(0, search, classFilter, sectionFilter);
+      setPage(0);
       setFormOpen(false);
     } catch (err: unknown) {
       const error = err as { response?: { data?: string }; message?: string };
@@ -257,23 +345,36 @@ export default function StudentsPage() {
     }
   };
 
-  // ── Delete ────────────────────────────────────────────────────────
-  const handleDelete = async () => {
-    if (!deleteTarget) return;
-    // No backend delete endpoint — remove locally and notify
-    setStudents((prev) => prev.filter((s) => s.studentId !== deleteTarget.studentId));
-    setTotalElements((n) => n - 1);
-    toast.success("Student removed from view (no backend delete endpoint yet)");
-    setDeleteTarget(null);
+  // ── Toggle Activation ────────────────────────────────────────────────────────
+  const handleToggleActive = async () => {
+    if (!actionTarget) return;
+    setSubmitting(true);
+    const { student, action } = actionTarget;
+    try {
+      const isActive = action === "activate";
+      await adminService.toggleStudentActivation(student.uuid, isActive);
+      toast.success(`${student.firstName} ${student.lastName} has been ${isActive ? "activated" : "blocked"}`);
+      setActionTarget(null);
+      await fetchStudents(page, search, classFilter, sectionFilter);
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: string }; message?: string };
+      const msg = error?.response?.data ?? error?.message ?? `Failed to ${action} student`;
+      toast.error(typeof msg === "string" ? msg : `Failed to ${action} student`);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   // ── Bulk upload complete ──────────────────────────────────────────
   const handleBulkUploadComplete = async () => {
-    setBulkOpen(false);
+    // Intentionally omitting setBulkOpen(false) here so the user can read the detailed 
+    // row-level success/failure report table rendered by <BulkDataUpload />
     setPage(0);
     setSearch("");
     setSearchInput("");
-    await fetchStudents(0, "");
+    setClassFilter("");
+    setSectionFilter("");
+    await fetchStudents(0, "", "", "");
     toast.success("Bulk import complete — table refreshed");
   };
 
@@ -319,10 +420,53 @@ export default function StudentsPage() {
             onChange={(e) => handleSearchChange(e.target.value)}
           />
         </div>
+        
+        {/* Class Filter */}
+        <Select value={classFilter || "ALL"} onValueChange={handleClassFilterChange}>
+          <SelectTrigger className="w-[140px]">
+            <SelectValue placeholder="All Classes" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="ALL">All Classes</SelectItem>
+            {classes.map((c) => (
+              <SelectItem key={c.classId} value={c.name}>
+                {c.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {/* Section Filter (Only visible if a class is selected & has sections) */}
+        {(() => {
+          const filterClassObj = classes.find((c) => c.name === classFilter);
+          if (!filterClassObj || filterClassObj.sections.length === 0) return null;
+          
+          return (
+            <Select 
+              value={sectionFilter || "ALL"} 
+              onValueChange={(v) => { setSectionFilter(v === "ALL" ? "" : v); setPage(0); }}
+            >
+              <SelectTrigger className="w-[140px]">
+                <SelectValue placeholder="All Sections" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">All Sections</SelectItem>
+                {[...filterClassObj.sections]
+                  .sort((a, b) => a.sectionName.localeCompare(b.sectionName, undefined, { numeric: true }))
+                  .map((sec) => (
+                    <SelectItem key={sec.uuid} value={sec.sectionName}>
+                      {sec.sectionName}
+                    </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          );
+        })()}
+
         <Button
           variant="outline"
           size="icon"
-          onClick={() => fetchStudents(page, search)}
+          onClick={() => fetchStudents(page, search, classFilter, sectionFilter)}
           disabled={loading}
         >
           <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
@@ -377,7 +521,9 @@ export default function StudentsPage() {
                     {page * PAGE_SIZE + idx + 1}
                   </td>
                   <td className="px-4 py-3 font-medium text-foreground">
-                    {s.firstName} {s.lastName}
+                    <Link to={`/dashboard/admin/users/student/${s.uuid}`} className="hover:underline text-primary transition-colors">
+                      {s.firstName} {s.lastName}
+                    </Link>
                   </td>
                   <td className="px-4 py-3 text-muted-foreground hidden md:table-cell">
                     {s.username}
@@ -395,27 +541,47 @@ export default function StudentsPage() {
                   </td>
                   <td className="px-4 py-3">
                     <StatusBadge variant={s.enrollmentStatus === "ACTIVE" ? "active" : "inactive"}>
-                      {s.enrollmentStatus ?? "ACTIVE"}
+                      {s.enrollmentStatus === "INACTIVE" ? "BLOCKED" : (s.enrollmentStatus ?? "ACTIVE")}
                     </StatusBadge>
                   </td>
                   <td className="px-4 py-3 text-right">
                     <div className="flex items-center justify-end gap-2">
+                      <Link to={`/dashboard/admin/users/student/${s.uuid}`}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 px-2 text-xs text-muted-foreground hover:text-primary"
+                        >
+                          View
+                        </Button>
+                      </Link>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => openEdit(s)}
-                        className="h-7 px-2 text-xs"
+                        className="h-7 px-2 text-xs text-muted-foreground hover:text-primary"
                       >
                         Edit
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setDeleteTarget(s)}
-                        className="h-7 px-2 text-xs text-destructive hover:text-destructive"
-                      >
-                        Remove
-                      </Button>
+                      {s.enrollmentStatus === "INACTIVE" ? (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setActionTarget({ student: s, action: 'activate' })}
+                          className="h-7 w-[72px] px-2 text-xs text-green-600 hover:text-green-700"
+                        >
+                          Activate
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setActionTarget({ student: s, action: 'block' })}
+                          className="h-7 w-[72px] px-2 text-xs text-destructive hover:text-destructive"
+                        >
+                          Block
+                        </Button>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -641,14 +807,27 @@ export default function StudentsPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete confirmation */}
+      {/* Action confirmation (Block / Activate) */}
       <ConfirmDialog
-        open={!!deleteTarget}
-        onOpenChange={(open) => !open && setDeleteTarget(null)}
-        title="Remove Student"
-        description={`Are you sure you want to remove ${deleteTarget?.firstName} ${deleteTarget?.lastName}?`}
-        confirmLabel="Remove"
-        onConfirm={handleDelete}
+        open={!!actionTarget}
+        onOpenChange={(open) => !open && setActionTarget(null)}
+        title={actionTarget?.action === 'activate' ? "Activate Student" : "Block Student"}
+        description={`Are you sure you want to ${actionTarget?.action} ${actionTarget?.student.firstName}?`}
+        confirmLabel={actionTarget?.action === 'activate' ? "Activate" : "Block"}
+        onConfirm={handleToggleActive}
+        loading={submitting}
+        destructive={actionTarget?.action === 'block'}
+      />
+
+      <ConfirmDialog
+        open={!!pendingEditData}
+        onOpenChange={(open) => !open && setPendingEditData(null)}
+        title="Confirm Edit"
+        description={`Are you sure you want to save these changes for ${editingStudent?.firstName}?`}
+        confirmLabel="Save Changes"
+        onConfirm={() => { if (pendingEditData) handleEdit(pendingEditData); }}
+        loading={submitting}
+        destructive={false}
       />
     </motion.div>
   );

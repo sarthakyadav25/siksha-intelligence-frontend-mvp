@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import type { PayloadAction } from '@reduxjs/toolkit'
 import { api } from '@/lib/axios'
-import { clearStoredRefreshToken, setStoredRefreshToken } from '@/lib/refreshToken'
+import { getStoredRefreshToken, clearStoredRefreshToken, setStoredRefreshToken } from '@/lib/refreshToken'
 
 export interface User {
   /** Backend user identifier (from `userDetailsDto.userId`). */
@@ -9,6 +9,7 @@ export interface User {
   username: string
   email: string
   roles: string[]
+  profileUrl?: string
 }
 
 export interface AuthState {
@@ -58,8 +59,17 @@ const initialState: AuthState = {
 const extractMessage = (error: unknown): string => {
   // Keep error handling resilient to different Axios/backends error shapes.
   if (typeof error === 'string') return error
-  if (error && typeof error === 'object' && 'message' in error && typeof (error as any).message === 'string') {
-    return (error as any).message
+  if (error && typeof error === 'object') {
+    const errObj = error as Record<string, any>;
+    // Check if the backend sent a specific error message in the response body
+    const responseMessage = errObj.response?.data?.message;
+    if (typeof responseMessage === 'string' && responseMessage.trim().length > 0) {
+      return responseMessage;
+    }
+    // Fallback to the generic error message (e.g. "Request failed with status code 401")
+    if (typeof errObj.message === 'string') {
+      return errObj.message;
+    }
   }
   return 'Something went wrong'
 }
@@ -130,6 +140,27 @@ export const login = createAsyncThunk<LoginResponse, LoginRequest, { rejectValue
       return thunkApi.rejectWithValue(extractMessage(err))
     }
   },
+)
+
+export const logoutUser = createAsyncThunk<void, void, { state: { auth: AuthState } }>(
+  'auth/logoutUser',
+  async (_, { getState, dispatch }) => {
+    try {
+      const { auth } = getState();
+      const refreshToken = auth.refreshToken || getStoredRefreshToken();
+
+      if (refreshToken) {
+        // Best practice: Fire the backend logout to invalidate the session/token/refresh token.
+        // We catch errors to ensure local logout still succeeds even if the network fails.
+        await api.post('/auth/logout', { refreshToken });
+      }
+    } catch (err) {
+      console.error('Backend logout failed', err);
+    } finally {
+      // Always dispatch the synchronous logout to immediately clear local state
+      dispatch(authSlice.actions.logout());
+    }
+  }
 )
 
 export const authSlice = createSlice({

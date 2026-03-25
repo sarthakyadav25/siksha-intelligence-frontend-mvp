@@ -21,8 +21,8 @@ export interface UserProfileDTO {
   dateOfBirth?: string;
   bio?: string;
   gender?: Gender;
-  username: string;
   email: string;
+  profileUrl?: string;
 }
 
 export interface UserProfileResponseDTO {
@@ -36,6 +36,7 @@ export interface UserProfileResponseDTO {
   bio?: string;
   username: string;
   email: string;
+  profileUrl?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -82,6 +83,7 @@ export interface StudentProfileDTO {
   enrollmentNo?: string;
   enrollmentStatus?: string;
   medicalRecord?: StudentMedicalRecordDTO;
+  profileUrl?: string;
 }
 
 // ── Staff-specific ───────────────────────────────────────────────────
@@ -126,6 +128,7 @@ export interface StaffProfileDTO {
   teacherDetails?: TeacherDetailsDTO;
   principalDetails?: PrincipalDetailsDTO;
   active: boolean;
+  profileUrl?: string;
 }
 
 // ── Guardian-specific ────────────────────────────────────────────────
@@ -138,10 +141,46 @@ export interface LinkedStudentDTO {
 }
 
 export interface GuardianProfileDTO {
-  guardianId: number;
+  guardianId: number; // For the database ID
+  uuid?: string; // The system UUID used for linking
+  // Identity fields that should come back from GET /guardians
+  name?: string;
+  relation?: string;
+  username?: string;
+  email?: string;
+  firstName?: string;
+  middleName?: string;
+  lastName?: string;
+  preferredName?: string;
+  dateOfBirth?: string;
+  gender?: Gender;
+  bio?: string;
+  phoneNumber?: string;
+  // Guardian specific
   occupation?: string;
   employer?: string;
+  // Relationship specific (from LinkGuardianRequestDTO)
+  relationshipType?: string;
+  primaryContact?: boolean;
+  canPickup?: boolean;
+  financialContact?: boolean;
+  canViewGrades?: boolean;
   linkedStudents?: LinkedStudentDTO[];
+}
+
+export interface StudentGuardianDTO {
+  guardianUuid: string;
+  name: string;
+  relation: string;
+  phoneNumber?: string;
+  occupation?: string;
+  employer?: string;
+  primaryContact: boolean;
+  canPickup: boolean;
+  financialContact: boolean;
+  canViewGrades: boolean;
+  active: boolean;
+  profileUrl?: string;
 }
 
 // ── Comprehensive Profile ────────────────────────────────────────────

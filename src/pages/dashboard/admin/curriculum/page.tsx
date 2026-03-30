@@ -6,6 +6,7 @@ import { api } from '@/lib/axios';
 import { OverviewHeader } from '@/features/academics/curriculum_mapping/components/OverviewHeader';
 import { ClassCurriculumPanel } from '@/features/academics/curriculum_mapping/components/ClassCurriculumPanel';
 import { AddSubjectDialog } from '@/features/academics/curriculum_mapping/components/AddSubjectDialog';
+import type { SelectedSubjectEntry } from '@/features/academics/curriculum_mapping/components/AddSubjectDialog';
 import { SubjectLibraryPanel } from '@/features/academics/curriculum_mapping/components/SubjectLibraryPanel';
 import { TeacherSubjectMappingPanel } from '@/features/academics/curriculum_mapping/components/TeacherSubjectMappingPanel';
 import {
@@ -61,12 +62,15 @@ export default function CurriculumPage() {
         setSelectedClass({ id: classId, name: className });
     };
 
-    const handleAddSubject = (subjectId: string, periodsPerWeek: number) => {
-        if (!selectedClass) return;
-        addSubject(
-            { classId: selectedClass.id, body: { subjectId, periodsPerWeek } },
-            { onSuccess: () => setAddDialogOpen(false) }
-        );
+    const handleAddSubject = (entries: SelectedSubjectEntry[]) => {
+        if (!selectedClass || entries.length === 0) return;
+        // Fire one mutation per subject; close dialog after the last one
+        entries.forEach((entry, idx) => {
+            addSubject(
+                { classId: selectedClass.id, body: { subjectId: entry.subjectId, periodsPerWeek: entry.periodsPerWeek } },
+                { onSuccess: () => { if (idx === entries.length - 1) setAddDialogOpen(false); } }
+            );
+        });
     };
 
     const handleUpdatePeriods = (curriculumMapId: string, periodsPerWeek: number) => {

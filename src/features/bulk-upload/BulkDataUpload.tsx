@@ -11,6 +11,7 @@ import {
   ShieldCheck,
   FileSpreadsheet,
   X,
+  Maximize2,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -197,10 +198,67 @@ export default function BulkDataUpload({
   const [userType, setUserType] = useState<BulkImportUserType>(defaultUserType ?? "students");
   const accessToken = useAppSelector((s) => s.auth.accessToken);
 
-  // Legacy state kept for the UploadingProgress component
   const [rowProgress, setRowProgress] = useState<Map<number, RowStatus>>(new Map());
   const [activeRowNumber, setActiveRowNumber] = useState(1);
+  const [isMinimized, setIsMinimized] = useState(false);
   const sseCtrlRef = useRef<AbortController | null>(null);
+  const toastIdRef = useRef<string | number | null>(null);
+
+  // ── Toast progress renderer ────────────────────────────────────────────────
+  const showProgressToast = useCallback((
+    done: number,
+    total: number,
+    failed: number,
+    label: string,
+    onRestore: () => void
+  ) => {
+    const toastContent = (
+      <div className="w-full">
+        <div className="flex items-center justify-between mb-1.5">
+          <p className="text-sm font-semibold flex items-center gap-1.5">
+            <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
+            Importing {label}…
+          </p>
+          <span className="text-xs text-muted-foreground tabular-nums">{done}/{total}</span>
+        </div>
+        <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden flex mb-1.5">
+          <div
+            className="h-full rounded-l-full bg-green-500 transition-all duration-300"
+            style={{ width: `${total > 0 ? ((done - failed) / total) * 100 : 0}%` }}
+          />
+          <div
+            className="h-full bg-destructive transition-all duration-300"
+            style={{ width: `${total > 0 ? (failed / total) * 100 : 0}%` }}
+          />
+        </div>
+        <div className="flex items-center justify-between">
+          {failed > 0 && <span className="text-xs text-destructive">{failed} failed</span>}
+          <button
+            type="button"
+            onClick={onRestore}
+            className="ml-auto text-xs text-primary underline-offset-2 hover:underline"
+          >
+            View Full Progress
+          </button>
+        </div>
+      </div>
+    );
+
+    if (toastIdRef.current) {
+      toast.custom(() => toastContent, { id: toastIdRef.current as string, duration: Infinity });
+    } else {
+      const id = toast.custom(() => toastContent, { duration: Infinity });
+      toastIdRef.current = id;
+    }
+  }, []);
+
+  const handleRestore = useCallback(() => {
+    setIsMinimized(false);
+    if (toastIdRef.current) {
+      toast.dismiss(toastIdRef.current);
+      toastIdRef.current = null;
+    }
+  }, []);
 
   // ── File change ──────────────────────────────────────────────────────────
   const handleFileChange = useCallback((f: File | null) => {
@@ -257,11 +315,26 @@ export default function BulkDataUpload({
           try {
             if (eventType === "ROW_SUCCESS") {
               const d = JSON.parse(data) as { rowNumber: number; identifier: string };
-              setRowProgress((prev) => { const next = new Map(prev); next.set(d.rowNumber, { kind: "success" }); return next; });
+              setRowProgress((prev) => {
+                const next = new Map(prev);
+                next.set(d.rowNumber, { kind: "success" });
+                // Update toast if minimized
+                const successes = Array.from(next.values()).filter(v => v.kind === "success").length;
+                const failures = Array.from(next.values()).filter(v => v.kind === "failure").length;
+                if (isMinimized) showProgressToast(successes + failures, parsedData?.rows.length ?? 0, failures, selectedTypeLabel, handleRestore);
+                return next;
+              });
               setActiveRowNumber(d.rowNumber + 1);
             } else if (eventType === "ROW_FAILURE") {
               const d = JSON.parse(data) as { rowNumber: number; identifier: string; errorMessage: string };
-              setRowProgress((prev) => { const next = new Map(prev); next.set(d.rowNumber, { kind: "failure", error: d.errorMessage }); return next; });
+              setRowProgress((prev) => {
+                const next = new Map(prev);
+                next.set(d.rowNumber, { kind: "failure", error: d.errorMessage });
+                const successes = Array.from(next.values()).filter(v => v.kind === "success").length;
+                const failures = Array.from(next.values()).filter(v => v.kind === "failure").length;
+                if (isMinimized) showProgressToast(successes + failures, parsedData?.rows.length ?? 0, failures, selectedTypeLabel, handleRestore);
+                return next;
+              });
               setActiveRowNumber(d.rowNumber + 1);
             } else if (eventType === "JOB_COMPLETE") {
               sseCtrlRef.current = null;
@@ -270,6 +343,8 @@ export default function BulkDataUpload({
                 const r: BulkImportReportDTO = { status: d.failureCount === 0 ? "SUCCESS" : "PARTIAL", totalRows: d.totalRows, successCount: d.successCount, failureCount: d.failureCount, errorMessages: [] };
                 setReport(r);
                 setPhase("success");
+                setIsMinimized(false);
+                if (toastIdRef.current) { toast.dismiss(toastIdRef.current); toastIdRef.current = null; }
                 if (d.failureCount === 0) {
                   toast.success("Import Successful", { description: `${d.successCount} of ${d.totalRows} records imported.` });
                 } else {
@@ -283,6 +358,8 @@ export default function BulkDataUpload({
               try { const d = JSON.parse(data) as { errorMessage?: string }; if (d.errorMessage) message = d.errorMessage; } catch {/* ignore */}
               setFileError(message);
               setPhase("error");
+              setIsMinimized(false);
+              if (toastIdRef.current) { toast.dismiss(toastIdRef.current); toastIdRef.current = null; }
               toast.error("Import Failed", { description: message });
             }
           } catch {/* ignore json parse errors */}
@@ -323,6 +400,7 @@ export default function BulkDataUpload({
   // ── Reset ──────────────────────────────────────────────────────────────────
   const handleReset = useCallback(() => {
     if (sseCtrlRef.current) { sseCtrlRef.current.abort(); sseCtrlRef.current = null; }
+    if (toastIdRef.current) { toast.dismiss(toastIdRef.current); toastIdRef.current = null; }
     setPhase("idle");
     setFile(null);
     setFileError(null);
@@ -330,6 +408,7 @@ export default function BulkDataUpload({
     setReport(null);
     setRowProgress(new Map());
     setActiveRowNumber(1);
+    setIsMinimized(false);
   }, []);
 
   const isValidating = phase === "validating";
@@ -466,12 +545,31 @@ export default function BulkDataUpload({
         {/* ── UPLOADING — SSE progress ── */}
         {phase === "uploading" && parsedData && (
           <motion.div key="uploading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <UploadingProgress
-              data={parsedData}
-              typeLabel={selectedTypeLabel}
-              rowProgress={rowProgress}
-              activeRowNumber={activeRowNumber}
-            />
+            {isMinimized ? (
+              <div className="flex items-center justify-between rounded-xl border border-border bg-card/70 px-4 py-3 text-sm">
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                  Import running in background…
+                </div>
+                <Button variant="outline" size="sm" onClick={handleRestore} className="gap-1.5 h-7 text-xs">
+                  <Maximize2 className="h-3.5 w-3.5" />
+                  Show Progress
+                </Button>
+              </div>
+            ) : (
+              <UploadingProgress
+                data={parsedData}
+                typeLabel={selectedTypeLabel}
+                rowProgress={rowProgress}
+                activeRowNumber={activeRowNumber}
+                onMinimize={() => {
+                  setIsMinimized(true);
+                  const successes = Array.from(rowProgress.values()).filter(v => v.kind === "success").length;
+                  const failures = Array.from(rowProgress.values()).filter(v => v.kind === "failure").length;
+                  showProgressToast(successes + failures, parsedData.rows.length, failures, selectedTypeLabel, handleRestore);
+                }}
+              />
+            )}
           </motion.div>
         )}
 

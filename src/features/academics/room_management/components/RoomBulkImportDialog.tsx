@@ -8,6 +8,8 @@ import {
     XCircle,
     AlertCircle,
     X,
+    Minimize2,
+    Maximize2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -99,6 +101,8 @@ export function RoomBulkImportDialog({ open, onOpenChange }: RoomBulkImportDialo
 
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [dragActive, setDragActive] = useState(false);
+    const [isMinimized, setIsMinimized] = useState(false);
+    const toastIdRef = useRef<string | number | null>(null);
     const [result, setResult] = useState<ImportResult>({
         status: 'idle',
         totalRows: 0,
@@ -117,15 +121,58 @@ export function RoomBulkImportDialog({ open, onOpenChange }: RoomBulkImportDialo
 
     const resetState = useCallback(() => {
         setSelectedFile(null);
+        setIsMinimized(false);
+        if (toastIdRef.current) { toast.dismiss(toastIdRef.current); toastIdRef.current = null; }
         setResult({ status: 'idle', totalRows: 0, successCount: 0, failureCount: 0, errors: [], events: [] });
         eventSourceRef.current?.close();
     }, []);
 
     const handleClose = () => {
-        if (result.status === 'uploading') return; // Don't close during upload
+        if (result.status === 'uploading') return;
         resetState();
         onOpenChange(false);
     };
+
+    // ── Toast progress renderer ────────────────────────────────────────────────
+    const showProgressToast = useCallback((
+        success: number, failed: number, total: number, onRestore: () => void
+    ) => {
+        const done = success + failed;
+        const toastContent = (
+            <div className="w-full">
+                <div className="flex items-center justify-between mb-1.5">
+                    <p className="text-sm font-semibold flex items-center gap-1.5">
+                        <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
+                        Importing Rooms…
+                    </p>
+                    <span className="text-xs text-muted-foreground tabular-nums">
+                        {success} ✓ {failed > 0 ? `· ${failed} ✗` : ''}
+                    </span>
+                </div>
+                <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden flex mb-1.5">
+                    <div className="h-full rounded-l-full bg-green-500 transition-all duration-300" style={{ width: `${total > 0 ? (success / total) * 100 : 0}%` }} />
+                    <div className="h-full bg-destructive transition-all duration-300" style={{ width: `${total > 0 ? (failed / total) * 100 : 0}%` }} />
+                </div>
+                <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">{done} rows processed</span>
+                    <button type="button" onClick={onRestore} className="text-xs text-primary underline-offset-2 hover:underline">
+                        View Full Progress
+                    </button>
+                </div>
+            </div>
+        );
+        if (toastIdRef.current) {
+            toast.custom(() => toastContent, { id: toastIdRef.current as string, duration: Infinity });
+        } else {
+            const id = toast.custom(() => toastContent, { duration: Infinity });
+            toastIdRef.current = id;
+        }
+    }, []);
+
+    const handleRestore = useCallback(() => {
+        setIsMinimized(false);
+        if (toastIdRef.current) { toast.dismiss(toastIdRef.current); toastIdRef.current = null; }
+    }, []);
 
     const handleFileSelect = (file: File) => {
         const isValid = file.name.endsWith('.csv') || file.type === 'text/csv' || file.type === 'application/vnd.ms-excel';
@@ -158,33 +205,28 @@ export function RoomBulkImportDialog({ open, onOpenChange }: RoomBulkImportDialo
 
         eventSource.addEventListener('ROW_SUCCESS', (e) => {
             const data: SseRowEvent = JSON.parse(e.data);
-            setResult(prev => ({
-                ...prev,
-                successCount: prev.successCount + 1,
-                events: [...prev.events, data],
-            }));
+            setResult(prev => {
+                const next = { ...prev, successCount: prev.successCount + 1, events: [...prev.events, data] };
+                if (isMinimized) showProgressToast(next.successCount, next.failureCount, next.totalRows, handleRestore);
+                return next;
+            });
         });
 
         eventSource.addEventListener('ROW_FAILURE', (e) => {
             const data: SseRowEvent = JSON.parse(e.data);
-            setResult(prev => ({
-                ...prev,
-                failureCount: prev.failureCount + 1,
-                errors: [...prev.errors, `Row ${data.rowNumber} (${data.identifier}): ${data.errorMessage}`],
-                events: [...prev.events, data],
-            }));
+            setResult(prev => {
+                const next = { ...prev, failureCount: prev.failureCount + 1, errors: [...prev.errors, `Row ${data.rowNumber} (${data.identifier}): ${data.errorMessage}`], events: [...prev.events, data] };
+                if (isMinimized) showProgressToast(next.successCount, next.failureCount, next.totalRows, handleRestore);
+                return next;
+            });
         });
 
         eventSource.addEventListener('JOB_COMPLETE', (e) => {
             const data = JSON.parse(e.data);
-            setResult(prev => ({
-                ...prev,
-                status: 'complete',
-                totalRows: data.totalRows,
-                successCount: data.successCount,
-                failureCount: data.failureCount,
-            }));
+            setResult(prev => ({ ...prev, status: 'complete', totalRows: data.totalRows, successCount: data.successCount, failureCount: data.failureCount }));
             eventSource.close();
+            setIsMinimized(false);
+            if (toastIdRef.current) { toast.dismiss(toastIdRef.current); toastIdRef.current = null; }
             queryClient.invalidateQueries({ queryKey: ['academics', 'rooms'] });
             if (data.failureCount === 0) {
                 toast.success(`Successfully imported ${data.successCount} rooms!`);
@@ -307,37 +349,62 @@ export function RoomBulkImportDialog({ open, onOpenChange }: RoomBulkImportDialo
 
                     {/* Step 3: Progress */}
                     {result.status === 'uploading' && (
-                        <div className="space-y-4">
-                            <div className="flex items-center gap-3">
-                                <Loader2 className="w-5 h-5 animate-spin text-primary" />
-                                <p className="text-sm font-medium">Importing rooms...</p>
+                        isMinimized ? (
+                            <div className="flex items-center justify-between rounded-xl border border-border bg-muted/30 px-4 py-3 text-sm">
+                                <div className="flex items-center gap-2 text-muted-foreground">
+                                    <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                                    Import running in background…
+                                </div>
+                                <Button variant="outline" size="sm" onClick={handleRestore} className="gap-1.5 h-7 text-xs">
+                                    <Maximize2 className="w-3.5 h-3.5" />
+                                    Show Progress
+                                </Button>
                             </div>
-                            <Progress value={progressPercent} className="h-2" />
-                            <div className="flex items-center gap-4 text-sm">
-                                <span className="text-green-600 font-medium">{result.successCount} success</span>
-                                {result.failureCount > 0 && (
-                                    <span className="text-red-600 font-medium">{result.failureCount} failed</span>
-                                )}
+                        ) : (
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-3">
+                                    <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                                    <p className="text-sm font-medium flex-1">Importing rooms...</p>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setIsMinimized(true);
+                                            showProgressToast(result.successCount, result.failureCount, result.totalRows, handleRestore);
+                                        }}
+                                        title="Minimize to toast"
+                                        className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                                    >
+                                        <Minimize2 className="w-3.5 h-3.5" />
+                                    </button>
+                                </div>
+                                <Progress value={progressPercent} className="h-2" />
+                                <div className="flex items-center gap-4 text-sm">
+                                    <span className="text-green-600 font-medium">{result.successCount} success</span>
+                                    {result.failureCount > 0 && (
+                                        <span className="text-red-600 font-medium">{result.failureCount} failed</span>
+                                    )}
+                                </div>
+                                {/* Live event feed */}
+                                <div className="max-h-48 overflow-y-auto rounded-lg border border-border bg-muted/20 p-3 space-y-1.5">
+                                    {result.events.map((evt, i) => (
+                                        <div key={i} className="flex items-center gap-2 text-xs">
+                                            {evt.errorMessage ? (
+                                                <XCircle className="w-3.5 h-3.5 text-red-500 flex-shrink-0" />
+                                            ) : (
+                                                <CheckCircle2 className="w-3.5 h-3.5 text-green-500 flex-shrink-0" />
+                                            )}
+                                            <span className="text-muted-foreground">Row {evt.rowNumber}:</span>
+                                            <span className="font-medium truncate">{evt.identifier}</span>
+                                            {evt.errorMessage && (
+                                                <span className="text-red-500 truncate ml-auto">— {evt.errorMessage}</span>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
-                            {/* Live event feed */}
-                            <div className="max-h-48 overflow-y-auto rounded-lg border border-border bg-muted/20 p-3 space-y-1.5">
-                                {result.events.map((evt, i) => (
-                                    <div key={i} className="flex items-center gap-2 text-xs">
-                                        {evt.errorMessage ? (
-                                            <XCircle className="w-3.5 h-3.5 text-red-500 flex-shrink-0" />
-                                        ) : (
-                                            <CheckCircle2 className="w-3.5 h-3.5 text-green-500 flex-shrink-0" />
-                                        )}
-                                        <span className="text-muted-foreground">Row {evt.rowNumber}:</span>
-                                        <span className="font-medium truncate">{evt.identifier}</span>
-                                        {evt.errorMessage && (
-                                            <span className="text-red-500 truncate ml-auto">— {evt.errorMessage}</span>
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
+                        )
                     )}
+
 
                     {/* Step 4: Results */}
                     {result.status === 'complete' && (

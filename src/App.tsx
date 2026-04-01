@@ -16,6 +16,7 @@ import AdminTimeslotsPage from '@/pages/dashboard/admin/timeslots/page'
 import UserDetailsPage from '@/pages/dashboard/admin/users/[id]/page'
 import CurriculumPage from '@/pages/dashboard/admin/curriculum/page'
 import AdminRoomsPage from '@/pages/dashboard/admin/rooms/page'
+import AdminFinancePage from './pages/dashboard/admin/finance/page'
 import TeacherDashboard from '@/pages/dashboard/teacher/page'
 import StudentDashboard from '@/pages/dashboard/student/page'
 import StudentProfilePage from '@/pages/dashboard/student/profile/page'
@@ -38,7 +39,7 @@ export default function App() {
             </GuestOnly>
           }
         />
-        
+
         {/* Protected routes: require authentication */}
         <Route
           path="/"
@@ -84,6 +85,7 @@ export default function App() {
           <Route path="timeslots" element={<AdminTimeslotsPage />} />
           <Route path="curriculum" element={<CurriculumPage />} />
           <Route path="rooms" element={<AdminRoomsPage />} />
+          <Route path="finance" element={<AdminFinancePage />} />
           <Route path="users/:type/:id" element={<UserDetailsPage />} />
           {/* Catch-all for unknown admin sub-routes */}
           <Route path="*" element={<Navigate to="/dashboard/admin" replace />} />

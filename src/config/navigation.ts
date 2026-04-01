@@ -39,6 +39,7 @@ export const ADMIN_NAV_ITEMS: NavItem[] = [
   { label: "Timeslots", path: "/dashboard/admin/timeslots", icon: Clock },
   { label: "Curriculum", path: "/dashboard/admin/curriculum", icon: Map },
   { label: "Rooms", path: "/dashboard/admin/rooms", icon: DoorOpen },
+  { label: "Finance", path: "/dashboard/admin/finance", icon: Receipt },
   { label: "Settings", path: "/dashboard/admin/settings", icon: Settings },
 ];
 

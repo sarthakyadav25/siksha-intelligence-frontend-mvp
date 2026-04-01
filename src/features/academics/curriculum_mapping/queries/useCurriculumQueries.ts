@@ -43,7 +43,7 @@ export const useAddSubjectToClass = () => {
 export const useUpdateCurriculumPeriods = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: ({ curriculumMapId, classId, body }: { curriculumMapId: string; classId: string; body: CurriculumPeriodsUpdateDto }) =>
+        mutationFn: ({ curriculumMapId, body }: { curriculumMapId: string; classId: string; body: CurriculumPeriodsUpdateDto }) =>
             curriculumService.updatePeriods(curriculumMapId, body),
         onSuccess: (_, variables) => {
             queryClient.invalidateQueries({ queryKey: QUERY_KEYS.classCurriculum(variables.classId) });

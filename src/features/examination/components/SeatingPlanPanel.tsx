@@ -212,7 +212,7 @@ export default function SeatingPlanPanel() {
               <SelectValue placeholder="Choose an exam…" />
             </SelectTrigger>
             <SelectContent>
-              {exams.map((e) => (
+              {exams.filter(e => e.published).map((e) => (
                 <SelectItem key={e.uuid} value={e.uuid}>
                   {e.name} ({e.academicYear})
                 </SelectItem>

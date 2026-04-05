@@ -100,6 +100,40 @@ export interface AutoGenerateErrorResponse {
 
 export type AutoGenerateResponse = AutoGenerateSuccessResponse | AutoGenerateErrorResponse;
 
+// Bulk generation types
+export interface BulkSectionRequest {
+    sectionId: string;
+    className: string;
+    sectionName: string;
+    subjects: string[];
+    teachers: LLMTeacher[];
+    subjects_per_day: number;
+}
+
+export interface BulkGenerateRequest {
+    sections: BulkSectionRequest[];
+    user_query: string;
+}
+
+export interface BulkSectionResult {
+    sectionId: string;
+    className: string;
+    sectionName: string;
+    success: boolean;
+    timetable?: Record<string, TimetablePeriod[]>;
+    notes?: string;
+    error?: string;
+    conflicting_constraints?: string[];
+}
+
+export interface BulkGenerateResponse {
+    success: boolean;
+    totalSections: number;
+    successCount: number;
+    failedCount: number;
+    results: BulkSectionResult[];
+}
+
 // Backend API DTOs
 export interface TimetableOverviewDto {
     classId: string;

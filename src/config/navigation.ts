@@ -112,3 +112,17 @@ export const SUPER_ADMIN_NAV_ITEMS: NavItem[] = [
   { label: "Configuration", path: "/dashboard/super-admin/configuration",  icon: Settings2 },
   { label: "Security",      path: "/dashboard/super-admin/security",       icon: Lock },
 ];
+
+export const TEACHER_NAV_ITEMS: NavItem[] = [
+  {
+    label: "Dashboard",
+    path: "/dashboard/teacher",
+    icon: LayoutDashboard,
+    end: true,
+  },
+  { label: "Schedule", path: "/dashboard/teacher/schedule", icon: CalendarDays },
+  { label: "My Classes", path: "/dashboard/teacher/classes", icon: GraduationCap },
+  { label: "Attendance", path: "/dashboard/teacher/attendance", icon: CalendarCheck },
+  { label: "Profile", path: "/dashboard/teacher/profile", icon: User },
+];
+

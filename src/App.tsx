@@ -21,7 +21,12 @@ import AdminRoomsPage from '@/pages/dashboard/admin/rooms/page'
 import AdminFinancePage from './pages/dashboard/admin/finance/page'
 
 import IdCardsPage from '@/pages/dashboard/admin/id-cards/page'
+import TeacherLayout from '@/components/layout/TeacherLayout'
 import TeacherDashboard from '@/pages/dashboard/teacher/page'
+import TeacherProfile from '@/pages/dashboard/teacher/profile/page'
+import TeacherSchedule from '@/pages/dashboard/teacher/schedule/page'
+import TeacherAttendance from '@/pages/dashboard/teacher/attendance/page'
+import TeacherClassRoster from '@/pages/dashboard/teacher/classes/page'
 import StudentDashboard from '@/pages/dashboard/student/page'
 import StudentProfilePage from '@/pages/dashboard/student/profile/page'
 import StudentLayout from '@/components/layout/StudentLayout'
@@ -119,17 +124,24 @@ export default function App() {
           <Route path="*" element={<Navigate to="/dashboard/admin" replace />} />
         </Route>
 
-        {/* Teacher Dashboard - SUPER_ADMIN, ADMIN, or TEACHER roles */}
+        {/* Teacher Dashboard — nested layout with sidebar */}
         <Route
           path="/dashboard/teacher"
           element={
             <ProtectedRoute>
               <RoleBasedRoute allowedRoles={['SUPER_ADMIN', 'ADMIN', 'TEACHER']}>
-                <TeacherDashboard />
+                <TeacherLayout />
               </RoleBasedRoute>
             </ProtectedRoute>
           }
-        />
+        >
+          <Route index element={<TeacherDashboard />} />
+          <Route path="schedule" element={<TeacherSchedule />} />
+          <Route path="classes" element={<TeacherClassRoster />} />
+          <Route path="attendance" element={<TeacherAttendance />} />
+          <Route path="profile" element={<TeacherProfile />} />
+          <Route path="*" element={<Navigate to="/dashboard/teacher" replace />} />
+        </Route>
 
         {/* Student Dashboard - All roles (students and above) */}
         <Route

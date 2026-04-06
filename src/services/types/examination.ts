@@ -1,4 +1,5 @@
 // ── Examination DTOs ─────────────────────────────────────────────────
+import type { TemplateSnapshotDTO } from "./examTemplate";
 
 // Exams
 export type ExamType = "MIDTERM" | "FINAL" | "UNIT_TEST" | "FORMATIVE" | "SUMMATIVE";
@@ -18,6 +19,8 @@ export interface ExamResponseDTO {
   examType: ExamType;
   startDate: string;
   endDate: string;
+  templateId?: string;          // Optional — UUID of the linked ExamTemplate
+  templateName?: string;        // Optional — Name of the linked ExamTemplate
   createdAt: string;
   updatedAt: string;
   createdBy: string;
@@ -27,6 +30,7 @@ export interface ExamResponseDTO {
 
 // Exam Schedules
 export interface ExamScheduleRequestDTO {
+  templateId: string;
   classId: string;
   sectionId?: string;
   subjectId: string;
@@ -43,6 +47,8 @@ export interface ExamScheduleRequestDTO {
 export interface ExamScheduleResponseDTO {
   scheduleId: number;
   examUuid: string;
+  templateId?: string;
+  templateSnapshot?: TemplateSnapshotDTO;
   classId: string;
   className: string;
   sectionId?: string;

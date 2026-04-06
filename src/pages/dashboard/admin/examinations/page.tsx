@@ -9,8 +9,10 @@ import {
   BookOpen,
   Shield,
   Armchair,
+  FileText,
 } from "lucide-react";
 import ExamDashboardPanel from "@/features/examination/components/ExamDashboardPanel";
+import ExamTemplatePanel from "@/features/examination/components/ExamTemplatePanel";
 import ExamListPanel from "@/features/examination/components/ExamListPanel";
 import ExamSchedulePanel from "@/features/examination/components/ExamSchedulePanel";
 import GradeSystemPanel from "@/features/examination/components/GradeSystemPanel";
@@ -29,7 +31,7 @@ import type {
   ExamScheduleResponseDTO,
 } from "@/services/types/examination";
 
-type ActiveTab = "dashboard" | "exams" | "grades" | "questions" | "papers" | "invigilation" | "seating";
+type ActiveTab = "dashboard" | "exams" | "templates" | "grades" | "questions" | "papers" | "invigilation" | "seating";
 
 // Sub-view management for drill-down navigation
 type SubView =
@@ -55,6 +57,11 @@ const tabs: {
     id: "exams",
     label: "Exams & Schedules",
     icon: Calendar,
+  },
+  {
+    id: "templates",
+    label: "Exam Templates",
+    icon: FileText,
   },
   {
     id: "grades",
@@ -214,6 +221,17 @@ export default function ExaminationsPage() {
               onBack={() => handleBackToSchedules(subView.exam)}
             />
           )}
+        </motion.div>
+      )}
+
+      {activeTab === "templates" && (
+        <motion.div
+          key="templates"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.2 }}
+        >
+          <ExamTemplatePanel />
         </motion.div>
       )}
 

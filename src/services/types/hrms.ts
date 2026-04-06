@@ -480,6 +480,14 @@ export interface StaffAttendanceSummaryDTO {
   presentDays: number;
   absentDays: number;
   leaveDays: number;
+  holidays: number;
+  attendancePercentage: number;
+  dailyRecords: StaffDayRecord[];
+}
+
+export interface StaffDayRecord {
+  date: string;
+  status: string;
 }
 
 // ── Staff Summary (for dropdowns) ────────────────────────────────────

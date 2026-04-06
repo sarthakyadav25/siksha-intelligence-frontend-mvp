@@ -164,6 +164,28 @@ export const hrmsService = {
     );
   },
 
+  // ── Self-service Leaves (for TEACHER role) ───────────────────────
+  listMyLeaveApplications(params?: HrmsListParams) {
+    return api.get<PageResponse<LeaveApplicationResponseDTO>>(`${HRMS}/leaves/self/applications`, {
+      params,
+    });
+  },
+
+  applyMyLeave(payload: LeaveApplicationCreateDTO) {
+    return api.post<LeaveApplicationResponseDTO>(`${HRMS}/leaves/self/applications`, payload);
+  },
+
+  cancelMyLeave(identifier: string) {
+    return api.post<LeaveApplicationResponseDTO>(
+      `${HRMS}/leaves/self/applications/${identifier}/cancel`,
+      {},
+    );
+  },
+
+  listMyLeaveTypes() {
+    return api.get<LeaveTypeConfigResponseDTO[]>(`${HRMS}/leaves/self/types`);
+  },
+
   // ── Leave Balances ───────────────────────────────────────────────
   getMyLeaveBalance() {
     return api.get<LeaveBalanceResponseDTO[]>(`${HRMS}/leaves/balance/me`);
@@ -392,5 +414,10 @@ export const hrmsService = {
   // ── Dashboard ────────────────────────────────────────────────────
   getDashboardSummary() {
     return api.get<HrmsDashboardSummaryDTO>(`${HRMS}/dashboard/summary`);
+  },
+
+  // ── Self-service Salary ─────────────────────────────────────────
+  getMySalaryStructure() {
+    return api.get<ComputedSalaryBreakdownDTO>(`${HRMS}/salary/self/structure`);
   },
 };

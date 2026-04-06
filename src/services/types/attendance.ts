@@ -23,10 +23,12 @@ export interface AttendanceTypeResponseDTO {
 
 // Student Attendance
 export interface StudentAttendanceRequestDTO {
-  studentId: number;
+  studentId?: number;
+  studentUuid?: string;
   attendanceShortCode: string;
   attendanceDate: string;
-  takenByStaffId: number;
+  takenByStaffId?: number;
+  takenByStaffUuid?: string;
   notes?: string;
 }
 

@@ -3,33 +3,8 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 
 import { Toaster } from '@/components/ui/sonner'
 import AdminLayout from '@/components/layout/AdminLayout'
-import AdminOverview from '@/pages/dashboard/admin/page'
-import StudentsPage from '@/pages/dashboard/admin/students/page'
-import StaffPage from '@/pages/dashboard/admin/staff/page'
-import SettingsPage from '@/pages/dashboard/admin/settings/page'
-import AdminTimetablePage from '@/pages/dashboard/admin/timetable/page'
-import AdminTimetableEditorPage from '@/pages/dashboard/admin/timetable/editor/page'
-import AdminTimetableReaderPage from '@/pages/dashboard/admin/timetable/reader/page'
-import AdminTimeslotsPage from '@/pages/dashboard/admin/timeslots/page'
-import UserDetailsPage from '@/pages/dashboard/admin/users/[id]/page'
-import CurriculumPage from '@/pages/dashboard/admin/curriculum/page'
-
-import ExaminationsPage from '@/pages/dashboard/admin/examinations/page'
-
-import AdminRoomsPage from '@/pages/dashboard/admin/rooms/page'
-import AdminFinancePage from './pages/dashboard/admin/finance/page'
-
-import IdCardsPage from '@/pages/dashboard/admin/id-cards/page'
 import TeacherLayout from '@/components/layout/TeacherLayout'
-import TeacherDashboard from '@/pages/dashboard/teacher/page'
-import TeacherProfile from '@/pages/dashboard/teacher/profile/page'
-import TeacherSchedule from '@/pages/dashboard/teacher/schedule/page'
-import TeacherAttendance from '@/pages/dashboard/teacher/attendance/page'
-import TeacherClassRoster from '@/pages/dashboard/teacher/classes/page'
-import StudentDashboard from '@/pages/dashboard/student/page'
-import StudentProfilePage from '@/pages/dashboard/student/profile/page'
 import StudentLayout from '@/components/layout/StudentLayout'
-import TeacherLayout from '@/components/layout/TeacherLayout'
 import { GuestOnly } from '@/routes/GuestOnly'
 import { ProtectedRoute } from '@/routes/ProtectedRoute'
 import { RoleBasedRoute } from '@/routes/RoleBasedRoute'
@@ -56,8 +31,13 @@ const AdminFinancePage = lazy(() => import('@/pages/dashboard/admin/finance/page
 const IdCardsPage = lazy(() => import('@/pages/dashboard/admin/id-cards/page'))
 const AdminHrmsPage = lazy(() => import('@/pages/dashboard/admin/hrms/page'))
 
-const TeacherDashboard = lazy(() => import('@/pages/dashboard/teacher/page'))
+const TeacherDashboardPage = lazy(() => import('@/pages/dashboard/teacher/page'))
+const TeacherProfilePage = lazy(() => import('@/pages/dashboard/teacher/profile/page'))
+const TeacherSchedulePage = lazy(() => import('@/pages/dashboard/teacher/schedule/page'))
+const TeacherAttendancePage = lazy(() => import('@/pages/dashboard/teacher/attendance/page'))
+const TeacherClassesPage = lazy(() => import('@/pages/dashboard/teacher/classes/page'))
 const TeacherMyHrPage = lazy(() => import('@/pages/dashboard/teacher/my-hr/page'))
+const TeacherMyClassPage = lazy(() => import('@/pages/dashboard/teacher/my-class/page'))
 
 const StudentDashboard = lazy(() => import('@/pages/dashboard/student/page'))
 const StudentProfilePage = lazy(() => import('@/pages/dashboard/student/profile/page'))
@@ -168,7 +148,12 @@ export default function App() {
             </ProtectedRoute>
           }
         >
-          <Route index element={withRouteSuspense(<TeacherDashboard />)} />
+          <Route index element={withRouteSuspense(<TeacherDashboardPage />)} />
+          <Route path="my-class" element={withRouteSuspense(<TeacherMyClassPage />)} />
+          <Route path="attendance" element={withRouteSuspense(<TeacherAttendancePage />)} />
+          <Route path="classes" element={withRouteSuspense(<TeacherClassesPage />)} />
+          <Route path="profile" element={withRouteSuspense(<TeacherProfilePage />)} />
+          <Route path="schedule" element={withRouteSuspense(<TeacherSchedulePage />)} />
           <Route path="my-hr" element={withRouteSuspense(<TeacherMyHrPage />)} />
           <Route path="*" element={<Navigate to="/dashboard/teacher" replace />} />
         </Route>

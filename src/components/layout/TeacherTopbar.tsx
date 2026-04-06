@@ -31,7 +31,7 @@ export default function TeacherTopbar() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const user = useAppSelector((s) => s.auth.user);
-  const notifCount = useAppSelector((s) => s.teacher.notificationCount);
+  const notifCount = 0;
 
   // Build breadcrumbs from path
   const segments = location.pathname

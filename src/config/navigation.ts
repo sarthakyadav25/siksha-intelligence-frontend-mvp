@@ -10,6 +10,7 @@ import {
   Bell,
   User,
   CalendarDays,
+  Home,
   Map,
 
   ClipboardCheck,
@@ -121,6 +122,31 @@ export const TEACHER_NAV_ITEMS: NavItem[] = [
     path: "/dashboard/teacher",
     icon: LayoutDashboard,
     end: true,
+  },
+  {
+    label: "My Class",
+    path: "/dashboard/teacher/my-class",
+    icon: Home,
+  },
+  {
+    label: "Attendance",
+    path: "/dashboard/teacher/attendance",
+    icon: CalendarCheck,
+  },
+  {
+    label: "Classes",
+    path: "/dashboard/teacher/classes",
+    icon: Users,
+  },
+  {
+    label: "Profile",
+    path: "/dashboard/teacher/profile",
+    icon: User,
+  },
+  {
+    label: "Schedule",
+    path: "/dashboard/teacher/schedule",
+    icon: CalendarDays,
   },
   {
     label: "My HR",

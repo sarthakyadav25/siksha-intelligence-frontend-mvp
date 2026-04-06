@@ -4,13 +4,25 @@ import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 import { cn } from "@/lib/utils";
 import { TEACHER_NAV_ITEMS } from "@/config/navigation";
+import CommandPalette from "@/features/teacher/components/CommandPalette";
+import { useTeacherHomeroom } from "@/features/teacher/queries/useTeacherQueries";
 
 export default function TeacherLayout() {
   const [collapsed, setCollapsed] = useState(true);
+  const { data: homeroom } = useTeacherHomeroom();
+
+  const navItems = homeroom?.classTeacher
+    ? TEACHER_NAV_ITEMS
+    : TEACHER_NAV_ITEMS.filter(
+        (item) =>
+          item.path !== "/dashboard/teacher/my-class" &&
+          item.path !== "/dashboard/teacher/attendance"
+      );
 
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
-      <Sidebar collapsed={collapsed} onToggle={() => setCollapsed((c) => !c)} navItems={TEACHER_NAV_ITEMS} />
+      <CommandPalette />
+      <Sidebar collapsed={collapsed} onToggle={() => setCollapsed((c) => !c)} navItems={navItems} />
 
       <div
         className={cn(

@@ -6,8 +6,9 @@ import './index.css'
 import App from './App.tsx'
 import { store } from './store/store'
 import { scheduleCriticalRoutePreload } from './lib/preloadCriticalRoutes'
+import { registerQueryClient } from './store/slices/authSlice'
 
-const queryClient = new QueryClient({
+export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       refetchOnWindowFocus: false,
@@ -15,6 +16,8 @@ const queryClient = new QueryClient({
     },
   },
 })
+
+registerQueryClient(queryClient)
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

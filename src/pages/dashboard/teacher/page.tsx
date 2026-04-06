@@ -155,6 +155,7 @@ export default function TeacherDashboardPage() {
                   <QuickAttendanceGrid
                     students={homeroomStudents?.content ?? []}
                     sectionUuid={homeroom.sectionUuid!}
+                    staffUuid={schedule?.staffUuid ?? ""}
                     onSubmitSuccess={() => queryClient.invalidateQueries({ queryKey: teacherKeys.summary() })}
                   />
                 </div>

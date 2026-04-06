@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import ScheduleTimeline from "@/features/teacher/components/ScheduleTimeline";
 import WeekOverviewPanel from "@/features/teacher/components/WeekOverviewPanel";
 import { useTeacherSchedule } from "@/features/teacher/queries/useTeacherQueries";
+import type { TeacherScheduleEntry } from "@/services/types/teacher";
 
 const DAYS = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
 const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -27,7 +28,7 @@ export default function TeacherSchedulePage() {
   const { data } = useTeacherSchedule();
 
   const entries = useMemo(
-    () => (data?.entries ?? []).filter((entry) => entry.dayOfWeek === day),
+    () => (data?.entries ?? []).filter((entry: TeacherScheduleEntry) => entry.dayOfWeek === day),
     [data?.entries, day]
   );
 
@@ -46,7 +47,7 @@ export default function TeacherSchedulePage() {
       const dow = dateObj.toLocaleDateString("en-US", { weekday: "long" }).toUpperCase();
       const isToday = dateObj.toDateString() === today.toDateString();
       const teachingCount = (data?.entries ?? []).filter(
-        (e) => e.dayOfWeek === dow && e.slotType === "TEACHING"
+        (e: TeacherScheduleEntry) => e.dayOfWeek === dow && e.slotType === "TEACHING"
       ).length;
       cells.push({ date: d, dayOfWeek: dow, isToday, teachingCount });
     }
@@ -116,7 +117,7 @@ export default function TeacherSchedulePage() {
                 {day.charAt(0) + day.slice(1).toLowerCase()}&apos;s Schedule
               </h3>
               <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
-                {entries.filter((e) => e.slotType === "TEACHING").length} classes
+                {entries.filter((e: TeacherScheduleEntry) => e.slotType === "TEACHING").length} classes
               </span>
             </div>
             <ScheduleTimeline entries={entries} />

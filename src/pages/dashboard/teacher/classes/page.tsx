@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useTeacherClasses, useTeacherStudents } from "@/features/teacher/queries/useTeacherQueries";
 import StudentQuickView from "@/features/teacher/components/StudentQuickView";
 import { UserAvatar } from "@/components/shared/UserAvatar";
+import type { SubjectItem } from "@/services/types/teacher";
 
 const SUBJECT_COLORS = [
   "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
@@ -78,7 +79,7 @@ export default function TeacherClassesPage() {
               <p className="text-base font-semibold text-foreground">{c.className} - {c.sectionName}</p>
               <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground"><Users className="h-3.5 w-3.5" /> {c.studentCount} students</p>
               <div className="mt-3 flex flex-wrap gap-1.5">
-                {c.subjects.map((s) => (
+                {c.subjects.map((s: SubjectItem) => (
                   <span key={s.uuid} className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${subjectColor(s.subjectCode)}`}>
                     {s.subjectCode}
                   </span>

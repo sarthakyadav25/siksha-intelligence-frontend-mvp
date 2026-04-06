@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import axios from "axios";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import ConfirmDialog from "@/components/common/ConfirmDialog";
@@ -53,6 +54,9 @@ const statusColor: Record<LeaveStatus, "default" | "secondary" | "destructive" |
   CANCELLED: "secondary",
 };
 
+const getStatusCode = (error: unknown): number | undefined =>
+  axios.isAxiosError(error) ? error.response?.status : undefined;
+
 export default function TeacherMyLeaves() {
   const queryClient = useQueryClient();
   const { formatDate } = useHrmsFormatters();
@@ -65,20 +69,38 @@ export default function TeacherMyLeaves() {
 
   const leaveTypesQuery = useQuery({
     queryKey: ["hrms", "leave-types"],
-    queryFn: () => hrmsService.listLeaveTypes().then((res) => res.data),
+    queryFn: async () => {
+      try {
+        const res = await hrmsService.listLeaveTypes();
+        return res.data;
+      } catch (error) {
+        if (getStatusCode(error) === 403 || getStatusCode(error) === 404) {
+          return [];
+        }
+        throw error;
+      }
+    },
   });
 
   const leavesQuery = useQuery({
     queryKey: ["hrms", "self", "leaves", status],
-    queryFn: () =>
-      hrmsService
-        .listLeaveApplications({
-          page: 0,
-          size: 100,
-          sort: ["appliedOn,desc"],
-          status: status === "ALL" ? undefined : status,
-        })
-        .then((res) => res.data),
+    queryFn: async () => {
+      const params = {
+        page: 0,
+        size: 100,
+        sort: ["appliedOn,desc"],
+        status: status === "ALL" ? undefined : status,
+      };
+      try {
+        const res = await hrmsService.listLeaveApplications(params);
+        return res.data;
+      } catch (error) {
+        if (getStatusCode(error) === 403 || getStatusCode(error) === 404) {
+          return { content: [], totalElements: 0, totalPages: 0 };
+        }
+        throw error;
+      }
+    },
   });
 
   const refresh = () => {
@@ -87,7 +109,9 @@ export default function TeacherMyLeaves() {
   };
 
   const applyMutation = useMutation({
-    mutationFn: (payload: LeaveApplicationCreateDTO) => hrmsService.applyLeave(payload),
+    mutationFn: async (payload: LeaveApplicationCreateDTO) => {
+      return await hrmsService.applyLeave(payload);
+    },
     onSuccess: () => {
       toast.success("Leave application submitted");
       setApplyConfirmOpen(false);
@@ -104,7 +128,9 @@ export default function TeacherMyLeaves() {
   });
 
   const cancelMutation = useMutation({
-    mutationFn: (applicationId: string) => hrmsService.cancelLeave(applicationId),
+    mutationFn: async (applicationId: string) => {
+      return await hrmsService.cancelLeave(applicationId);
+    },
     onSuccess: () => {
       toast.success("Leave cancelled");
       setCancelTarget(null);
@@ -164,30 +190,17 @@ export default function TeacherMyLeaves() {
     [formatDate],
   );
 
-  if (leavesQuery.isError || leaveTypesQuery.isError) {
-    return (
-      <div className="space-y-3 rounded-lg border border-destructive/30 p-4">
-        <p className="text-sm text-destructive">
-          {leavesQuery.isError
-            ? normalizeHrmsError(leavesQuery.error).message
-            : normalizeHrmsError(leaveTypesQuery.error).message}
-        </p>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => {
-            void leavesQuery.refetch();
-            void leaveTypesQuery.refetch();
-          }}
-        >
-          Retry
-        </Button>
-      </div>
-    );
-  }
+  const hasError = leavesQuery.isError || leaveTypesQuery.isError;
 
   return (
     <div className="space-y-4">
+      {hasError && (
+        <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4">
+          <p className="text-sm text-amber-700">
+            ⚠️ Some leave data could not be loaded. You can still view existing requests and apply for leave.
+          </p>
+        </div>
+      )}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h3 className="text-base font-semibold">My Leave Requests</h3>
         <div className="flex items-center gap-2">

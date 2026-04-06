@@ -74,7 +74,11 @@ export default function TeacherMyPayslips() {
       columns={columns}
       data={data?.content ?? []}
       getRowId={(row) => row.uuid}
-      emptyMessage={isLoading ? "Loading payslips..." : "No payslips available."}
+      emptyMessage={
+        isLoading
+          ? "Loading payslips..."
+          : "No payslips found. Payslips will appear here after your school processes payroll."
+      }
     />
   );
 }

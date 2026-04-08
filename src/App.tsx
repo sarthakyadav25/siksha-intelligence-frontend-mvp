@@ -37,6 +37,7 @@ const TeacherSchedulePage = lazy(() => import('@/pages/dashboard/teacher/schedul
 const TeacherAttendancePage = lazy(() => import('@/pages/dashboard/teacher/attendance/page'))
 const TeacherClassesPage = lazy(() => import('@/pages/dashboard/teacher/classes/page'))
 const TeacherMyHrPage = lazy(() => import('@/pages/dashboard/teacher/my-hr/page'))
+const TeacherEvaluationPage = lazy(() => import('@/pages/dashboard/teacher/evaluation/page'))
 const TeacherMyClassPage = lazy(() => import('@/pages/dashboard/teacher/my-class/page'))
 
 const StudentDashboard = lazy(() => import('@/pages/dashboard/student/page'))
@@ -155,6 +156,7 @@ export default function App() {
           <Route path="profile" element={withRouteSuspense(<TeacherProfilePage />)} />
           <Route path="schedule" element={withRouteSuspense(<TeacherSchedulePage />)} />
           <Route path="my-hr" element={withRouteSuspense(<TeacherMyHrPage />)} />
+          <Route path="evaluation" element={withRouteSuspense(<TeacherEvaluationPage />)} />
           <Route path="*" element={<Navigate to="/dashboard/teacher" replace />} />
         </Route>
 

@@ -244,3 +244,24 @@ export const useCreateAnnotation = () => {
   });
 };
 
+export const useMarkScheduleUploadComplete = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (scheduleId: number) =>
+      evaluationService.markScheduleUploadComplete(scheduleId).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: evaluationKeys.myAssignments() });
+    },
+  });
+};
+
+export const useDeleteAssignment = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (assignmentId: number) =>
+      evaluationService.deleteAssignment(assignmentId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: evaluationKeys.adminAssignments() });
+    },
+  });
+};

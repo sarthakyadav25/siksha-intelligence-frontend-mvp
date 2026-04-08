@@ -154,4 +154,16 @@ export const evaluationService = {
       { params: { page, size } }
     );
   },
+
+  /** POST /teacher/evaluation/{scheduleId}/upload-complete */
+  markScheduleUploadComplete(scheduleId: number) {
+    return api.post<EvaluationAssignmentResponseDTO>(
+      `/teacher/evaluation/${scheduleId}/upload-complete`
+    );
+  },
+
+  /** DELETE /auth/examination/evaluation/assignments/{assignmentId} */
+  deleteAssignment(assignmentId: number) {
+    return api.delete(`/auth/examination/evaluation/assignments/${assignmentId}`);
+  },
 };

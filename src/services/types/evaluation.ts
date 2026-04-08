@@ -5,6 +5,10 @@
 
 export type EvaluationAssignmentStatus = "ASSIGNED" | "IN_PROGRESS" | "COMPLETED";
 
+export type EvaluationAssignmentRole = "UPLOADER" | "EVALUATOR";
+
+export type UploadStatus = "NOT_STARTED" | "IN_PROGRESS" | "COMPLETED";
+
 export type AnswerSheetStatus = "UPLOADED" | "COMPLETE" | "CHECKING" | "DRAFT" | "FINAL";
 
 export type EvaluationResultStatus = "DRAFT" | "FINAL";
@@ -17,6 +21,7 @@ export interface EvaluationAssignmentCreateRequestDTO {
   examScheduleId: number;
   teacherId: string; // UUID
   dueDate?: string;  // ISO date
+  role?: EvaluationAssignmentRole; // defaults to EVALUATOR if omitted
 }
 
 export interface EvaluationAssignmentResponseDTO {
@@ -28,7 +33,9 @@ export interface EvaluationAssignmentResponseDTO {
   examDate: string;
   teacherId: string;   // UUID
   teacherName: string;
+  role: EvaluationAssignmentRole;
   status: EvaluationAssignmentStatus;
+  uploadStatus: UploadStatus | null;
   assignedAt: string;
   dueDate: string | null;
 }

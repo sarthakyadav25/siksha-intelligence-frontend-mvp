@@ -9,6 +9,8 @@ import {
   CheckCircle2,
   Clock,
   Play,
+  Upload,
+  FileCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,7 +38,10 @@ import {
 } from "../hooks/useEvaluationQueries";
 import { useGetAllExams, useGetSchedulesByExam } from "../hooks/useExaminationQueries";
 import { useStaffList } from "@/features/hrms/hooks/useStaffList";
-import type { EvaluationAssignmentStatus } from "@/services/types/evaluation";
+import type {
+  EvaluationAssignmentStatus,
+  EvaluationAssignmentRole,
+} from "@/services/types/evaluation";
 
 // ── Status badge config ──────────────────────────────────────────────
 
@@ -49,6 +54,24 @@ const statusConfig: Record<
   COMPLETED: { label: "Completed", variant: "outline", icon: CheckCircle2 },
 };
 
+// ── Role badge config ────────────────────────────────────────────────
+
+const roleConfig: Record<
+  EvaluationAssignmentRole,
+  { label: string; color: string; icon: React.ElementType }
+> = {
+  UPLOADER: {
+    label: "Uploader",
+    color: "bg-sky-500/10 text-sky-700 border-sky-200",
+    icon: Upload,
+  },
+  EVALUATOR: {
+    label: "Evaluator",
+    color: "bg-violet-500/10 text-violet-700 border-violet-200",
+    icon: FileCheck,
+  },
+};
+
 export default function EvaluationAssignmentsPanel() {
   const [search, setSearch] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -58,6 +81,7 @@ export default function EvaluationAssignmentsPanel() {
   const [selectedScheduleId, setSelectedScheduleId] = useState("");
   const [teacherIdInput, setTeacherIdInput] = useState("");
   const [dueDate, setDueDate] = useState("");
+  const [selectedRole, setSelectedRole] = useState<EvaluationAssignmentRole>("EVALUATOR");
 
   const { data: assignments = [], isLoading, isError } = useAdminEvaluationAssignments();
   const { data: exams = [] } = useGetAllExams();
@@ -73,7 +97,8 @@ export default function EvaluationAssignmentsPanel() {
         a.teacherName.toLowerCase().includes(q) ||
         a.examName.toLowerCase().includes(q) ||
         a.subjectName.toLowerCase().includes(q) ||
-        a.status.toLowerCase().includes(q)
+        a.status.toLowerCase().includes(q) ||
+        a.role.toLowerCase().includes(q)
     );
   }, [assignments, search]);
 
@@ -87,8 +112,9 @@ export default function EvaluationAssignmentsPanel() {
         examScheduleId: Number(selectedScheduleId),
         teacherId: teacherIdInput.trim(),
         dueDate: dueDate || undefined,
+        role: selectedRole,
       });
-      toast.success("Teacher assigned successfully");
+      toast.success(`Teacher assigned as ${selectedRole.toLowerCase()} successfully`);
       setDialogOpen(false);
       resetForm();
     } catch (err: unknown) {
@@ -102,6 +128,7 @@ export default function EvaluationAssignmentsPanel() {
     setSelectedScheduleId("");
     setTeacherIdInput("");
     setDueDate("");
+    setSelectedRole("EVALUATOR");
   };
 
   if (isError) {
@@ -126,11 +153,11 @@ export default function EvaluationAssignmentsPanel() {
           </div>
           <div>
             <h2 className="text-lg font-semibold tracking-tight">Evaluation Assignments</h2>
-            <p className="text-sm text-muted-foreground">Assign teachers to check answer sheets</p>
+            <p className="text-sm text-muted-foreground">Assign uploaders and evaluators for answer sheets</p>
           </div>
         </div>
         <Button onClick={() => setDialogOpen(true)} className="gap-2">
-          <Plus className="w-4 h-4" /> Assign Teacher
+          <Plus className="w-4 h-4" /> Assign Staff
         </Button>
       </div>
 
@@ -138,7 +165,7 @@ export default function EvaluationAssignmentsPanel() {
       <div className="relative max-w-sm">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <Input
-          placeholder="Search by teacher, exam, subject..."
+          placeholder="Search by teacher, exam, subject, role..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="pl-10"
@@ -165,6 +192,7 @@ export default function EvaluationAssignmentsPanel() {
                   <th className="text-left p-3 font-medium text-muted-foreground">Subject</th>
                   <th className="text-left p-3 font-medium text-muted-foreground">Date</th>
                   <th className="text-left p-3 font-medium text-muted-foreground">Teacher</th>
+                  <th className="text-left p-3 font-medium text-muted-foreground">Role</th>
                   <th className="text-left p-3 font-medium text-muted-foreground">Status</th>
                   <th className="text-left p-3 font-medium text-muted-foreground">Due Date</th>
                 </tr>
@@ -174,6 +202,8 @@ export default function EvaluationAssignmentsPanel() {
                   {filtered.map((a) => {
                     const cfg = statusConfig[a.status];
                     const Icon = cfg.icon;
+                    const rCfg = roleConfig[a.role];
+                    const RoleIcon = rCfg.icon;
                     return (
                       <motion.tr
                         key={a.assignmentId}
@@ -201,6 +231,12 @@ export default function EvaluationAssignmentsPanel() {
                           </div>
                         </td>
                         <td className="p-3">
+                          <span className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border ${rCfg.color}`}>
+                            <RoleIcon className="w-3 h-3" />
+                            {rCfg.label}
+                          </span>
+                        </td>
+                        <td className="p-3">
                           <Badge variant={cfg.variant} className="gap-1 text-xs">
                             <Icon className="w-3 h-3" />
                             {cfg.label}
@@ -224,13 +260,13 @@ export default function EvaluationAssignmentsPanel() {
         </div>
       )}
 
-      {/* Assign Teacher Dialog */}
+      {/* Assign Staff Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Assign Teacher for Evaluation</DialogTitle>
+            <DialogTitle>Assign Staff for Evaluation</DialogTitle>
             <DialogDescription>
-              Select an exam schedule and assign a teacher to evaluate answer sheets.
+              Select an exam schedule, choose a role (Uploader or Evaluator), and assign a staff member.
             </DialogDescription>
           </DialogHeader>
 
@@ -269,6 +305,37 @@ export default function EvaluationAssignmentsPanel() {
               </div>
             )}
 
+            {/* Role Selector */}
+            <div className="space-y-2">
+              <Label>Role</Label>
+              <Select value={selectedRole} onValueChange={(v) => setSelectedRole(v as EvaluationAssignmentRole)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="EVALUATOR">
+                    <div className="flex items-center gap-2">
+                      <FileCheck className="w-3.5 h-3.5 text-violet-600" />
+                      <span>Evaluator</span>
+                      <span className="text-xs text-muted-foreground ml-1">— grades answer sheets</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="UPLOADER">
+                    <div className="flex items-center gap-2">
+                      <Upload className="w-3.5 h-3.5 text-sky-600" />
+                      <span>Uploader</span>
+                      <span className="text-xs text-muted-foreground ml-1">— scans & uploads only</span>
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-[11px] text-muted-foreground leading-tight">
+                {selectedRole === "UPLOADER"
+                  ? "Uploader can only upload answer sheet images. They cannot see marks or evaluate."
+                  : "Evaluator can grade answer sheets. If no uploader is assigned, they can also upload."}
+              </p>
+            </div>
+
             <div className="space-y-2">
               <Label>Teacher</Label>
               <Select value={teacherIdInput} onValueChange={setTeacherIdInput}>
@@ -303,7 +370,7 @@ export default function EvaluationAssignmentsPanel() {
             </Button>
             <Button onClick={handleAssign} disabled={assignMutation.isPending} className="gap-2">
               {assignMutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-              Assign
+              Assign as {selectedRole === "UPLOADER" ? "Uploader" : "Evaluator"}
             </Button>
           </DialogFooter>
         </DialogContent>

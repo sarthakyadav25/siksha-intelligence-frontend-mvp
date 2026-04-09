@@ -4,6 +4,7 @@ import type {
   EvaluationAssignmentCreateRequestDTO,
   SaveEvaluationMarksRequestDTO,
   AnnotationRequestDTO,
+  EvaluationResultStatus,
 } from "@/services/types/evaluation";
 
 // ── Query Keys ──────────────────────────────────────────────────────
@@ -26,6 +27,14 @@ export const evaluationKeys = {
     [...evaluationKeys.all, "signed-url", answerSheetId] as const,
   answerSheetImages: (studentId: string, scheduleId: number) =>
     [...evaluationKeys.all, "images", studentId, scheduleId] as const,
+  // Admin results
+  adminResults: (status?: EvaluationResultStatus) =>
+    [...evaluationKeys.all, "admin-results", status ?? "all"] as const,
+  // Student results
+  studentResults: () =>
+    [...evaluationKeys.all, "student-results"] as const,
+  studentResultDetail: (resultId: number) =>
+    [...evaluationKeys.all, "student-result-detail", resultId] as const,
 };
 
 // ── Admin Queries ───────────────────────────────────────────────────
@@ -203,15 +212,15 @@ export const useSaveDraftMarks = () => {
       data: SaveEvaluationMarksRequestDTO;
     }) => evaluationService.saveDraftMarks(answerSheetId, data).then((r) => r.data),
     // No onSuccess invalidation — marks are managed locally in state.
-    // Structure query is only invalidated on publish.
   });
 };
 
-export const usePublishMarks = () => {
+/** Submit marks for admin review (DRAFT → SUBMITTED) */
+export const useSubmitMarks = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (answerSheetId: number) =>
-      evaluationService.publishMarks(answerSheetId).then((r) => r.data),
+      evaluationService.submitMarks(answerSheetId).then((r) => r.data),
     onSuccess: (_d, answerSheetId) => {
       qc.invalidateQueries({
         queryKey: evaluationKeys.structure(answerSheetId),
@@ -265,3 +274,74 @@ export const useDeleteAssignment = () => {
     },
   });
 };
+
+// ── Admin Result Review Hooks ───────────────────────────────────────
+
+export const useAdminResults = (status?: EvaluationResultStatus) =>
+  useQuery({
+    queryKey: evaluationKeys.adminResults(status),
+    queryFn: async () =>
+      (await evaluationService.getResultsForAdmin(status)).data,
+    staleTime: 30_000,
+  });
+
+export const useApproveResult = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (resultId: number) =>
+      evaluationService.approveResult(resultId).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: evaluationKeys.all });
+    },
+  });
+};
+
+export const useRejectResult = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (resultId: number) =>
+      evaluationService.rejectResult(resultId).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: evaluationKeys.all });
+    },
+  });
+};
+
+export const usePublishResult = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (resultId: number) =>
+      evaluationService.publishResult(resultId).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: evaluationKeys.all });
+    },
+  });
+};
+
+// ── Student Result Hooks ────────────────────────────────────────────
+
+export const useStudentResults = () =>
+  useQuery({
+    queryKey: evaluationKeys.studentResults(),
+    queryFn: async () =>
+      (await evaluationService.getStudentResults()).data,
+    staleTime: 60_000,
+  });
+
+export const useStudentResultDetail = (resultId: number, enabled = true) =>
+  useQuery({
+    queryKey: evaluationKeys.studentResultDetail(resultId),
+    queryFn: async () =>
+      (await evaluationService.getStudentResultDetail(resultId)).data,
+    enabled: enabled && !!resultId,
+    staleTime: 5 * 60_000,
+  });
+
+export const useDownloadResultPdf = () => {
+  return useMutation({
+    mutationFn: (resultId: number) =>
+      evaluationService.downloadStudentResultPdf(resultId).then((r) => r.data),
+  });
+};
+
+

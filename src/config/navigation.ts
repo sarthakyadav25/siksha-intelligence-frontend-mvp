@@ -12,9 +12,9 @@ import {
   CalendarDays,
   Home,
   Map,
-
   ClipboardCheck,
   FileCheck,
+  Award,
 
   Clock,
   DoorOpen,
@@ -78,6 +78,11 @@ export const STUDENT_NAV_ITEMS: NavItem[] = [
     label: "Academics",
     path: "/dashboard/student/academics",
     icon: BookOpen,
+  },
+  {
+    label: "My Results",
+    path: "/dashboard/student/results",
+    icon: Award,
   },
   {
     label: "Attendance",

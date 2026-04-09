@@ -23,6 +23,7 @@ import PastPapersPanel from "@/features/examination/components/PastPapersPanel";
 import InvigilationPanel from "@/features/examination/components/InvigilationPanel";
 import SeatingPlanPanel from "@/features/examination/components/SeatingPlanPanel";
 import EvaluationAssignmentsPanel from "@/features/examination/components/EvaluationAssignmentsPanel";
+import ResultsApprovalPanel from "@/features/examination/components/ResultsApprovalPanel";
 import {
   useGetAllGradeSystems,
   useGetAllQuestions,
@@ -33,7 +34,7 @@ import type {
   ExamScheduleResponseDTO,
 } from "@/services/types/examination";
 
-type ActiveTab = "dashboard" | "exams" | "templates" | "grades" | "questions" | "papers" | "invigilation" | "seating" | "evaluation";
+type ActiveTab = "dashboard" | "exams" | "templates" | "grades" | "questions" | "papers" | "invigilation" | "seating" | "evaluation" | "results";
 
 // Sub-view management for drill-down navigation
 type SubView =
@@ -94,6 +95,11 @@ const tabs: {
     id: "evaluation",
     label: "Evaluation",
     icon: FileCheck,
+  },
+  {
+    id: "results",
+    label: "Results",
+    icon: Award,
   },
 ];
 
@@ -156,7 +162,7 @@ export default function ExaminationsPage() {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.05 }}
-        className="flex gap-1.5 p-1 bg-muted/60 rounded-xl border border-border/40 w-fit overflow-x-auto print:hidden"
+        className="flex flex-wrap gap-1.5 p-1 bg-muted/60 rounded-xl border border-border/40 w-full print:hidden"
       >
         {tabs.map((tab) => {
           const Icon = tab.icon;
@@ -305,6 +311,17 @@ export default function ExaminationsPage() {
           transition={{ duration: 0.2 }}
         >
           <EvaluationAssignmentsPanel />
+        </motion.div>
+      )}
+
+      {activeTab === "results" && (
+        <motion.div
+          key="results"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.2 }}
+        >
+          <ResultsApprovalPanel />
         </motion.div>
       )}
     </div>

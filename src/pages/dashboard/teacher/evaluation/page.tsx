@@ -47,7 +47,7 @@ import {
   useEvaluationStudents,
   useEvaluationStructure,
   useSaveDraftMarks,
-  usePublishMarks,
+  useSubmitMarks,
   useUploadAnswerSheetImages,
   useCompleteImageUpload,
   useAnswerSheetImages,
@@ -750,7 +750,7 @@ function EvaluationView({
   const { data: annotations = [], refetch: refetchAnnotations } = useAnswerSheetAnnotations(answerSheetId);
   const createAnnotation = useCreateAnnotation();
   const saveMutation = useSaveDraftMarks();
-  const publishMutation = usePublishMarks();
+  const submitMutation = useSubmitMarks();
 
   // Students list for fast switching
   const { data: students = [] } = useEvaluationStudents(scheduleId);
@@ -764,7 +764,10 @@ function EvaluationView({
   const [annotationTool, setAnnotationTool] = useState<"TICK" | "CROSS" | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const savingRef = useRef(false);
-  const isFinal = structure?.resultStatus === "FINAL";
+  
+  const status = structure?.resultStatus;
+  const isFinal = status === "SUBMITTED" || status === "APPROVED" || status === "PUBLISHED";
+  const isRejected = status === "REJECTED";
 
   // Refs for stable debounced save
   const marksRef = useRef(marks);
@@ -905,19 +908,19 @@ function EvaluationView({
     [annotationTool, answerSheetId, currentPage, isFinal, createAnnotation, refetchAnnotations]
   );
 
-  const handlePublish = async () => {
+  const handleSubmit = async () => {
     const questionMarks = buildPayload();
     if (questionMarks.length === 0) {
-      toast.error("Please enter marks before publishing");
+      toast.error("Please enter marks before submitting");
       return;
     }
     try {
       await saveMutation.mutateAsync({ answerSheetId, data: { questionMarks } });
-      await publishMutation.mutateAsync(answerSheetId);
-      toast.success("Marks published successfully! Evaluation is now locked.");
+      await submitMutation.mutateAsync(answerSheetId);
+      toast.success("Marks submitted for review successfully! Editing is now locked.");
       setPublishDialogOpen(false);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Publish failed";
+      const msg = err instanceof Error ? err.message : "Submit failed";
       toast.error(msg);
     }
   };
@@ -1074,9 +1077,21 @@ function EvaluationView({
             <div className="h-8 w-px bg-border/50" />
             <div className="flex flex-col">
               <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Status</span>
-              {isFinal ? (
+              {status === "PUBLISHED" ? (
                 <span className="inline-flex items-center gap-1 text-xs text-emerald-700 font-medium">
                   <Lock className="w-3 h-3" /> Published
+                </span>
+              ) : status === "APPROVED" ? (
+                <span className="inline-flex items-center gap-1 text-xs text-teal-700 font-medium">
+                  <CheckCircle2 className="w-3 h-3" /> Approved
+                </span>
+              ) : status === "SUBMITTED" ? (
+                <span className="inline-flex items-center gap-1 text-xs text-amber-700 font-medium">
+                  <Clock className="w-3 h-3" /> Submitted
+                </span>
+              ) : isRejected ? (
+                <span className="inline-flex items-center gap-1 text-xs text-red-600 font-medium">
+                  <AlertCircle className="w-3 h-3" /> Rejected (Edit)
                 </span>
               ) : (
                 <SaveIndicator status={saveStatus} />
@@ -1159,15 +1174,15 @@ function EvaluationView({
                 <Button
                   size="sm"
                   onClick={() => setPublishDialogOpen(true)}
-                  disabled={publishMutation.isPending}
-                  className="gap-1.5 text-xs bg-emerald-600 hover:bg-emerald-700"
+                  disabled={submitMutation.isPending}
+                  className="gap-1.5 text-xs bg-amber-500 hover:bg-amber-600 text-white border-transparent"
                 >
-                  {publishMutation.isPending ? (
+                  {submitMutation.isPending ? (
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
                   ) : (
-                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <ArrowLeft className="w-3.5 h-3.5 rotate-90" />
                   )}
-                  Publish
+                  Submit for Review
                 </Button>
               </>
             )}
@@ -1391,13 +1406,14 @@ function EvaluationView({
         </div>
       </div>
 
-      {/* Publish Confirmation */}
+      {/* Submit Confirmation */}
       <AlertDialog open={publishDialogOpen} onOpenChange={setPublishDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Publish Evaluation?</AlertDialogTitle>
+            <AlertDialogTitle>Submit for Admin Review?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will finalize the marks and <strong>lock the evaluation</strong>. No further edits will be allowed.
+              This will submit the marks to the administration for approval. 
+              <strong> You will not be able to edit this unless it is rejected.</strong>
               <br /><br />
               Total marks: <strong>{totals.current.toFixed(1)} / {totals.max}</strong>
               <br />
@@ -1407,11 +1423,11 @@ function EvaluationView({
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              onClick={handlePublish}
-              className="bg-emerald-600 hover:bg-emerald-700"
+              onClick={handleSubmit}
+              className="bg-amber-500 hover:bg-amber-600 text-white"
             >
-              {publishMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-              Publish & Lock
+              {submitMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+              Submit for Review
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

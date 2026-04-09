@@ -13,6 +13,7 @@ import {
   ChevronDown,
   ChevronUp,
   Play,
+  Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,6 +27,16 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -37,6 +48,7 @@ import { toast } from "sonner";
 import {
   useAdminEvaluationAssignments,
   useAssignTeacher,
+  useDeleteAssignment,
 } from "../hooks/useEvaluationQueries";
 import { useGetAllExams, useGetSchedulesByExam } from "../hooks/useExaminationQueries";
 import { useStaffList } from "@/features/hrms/hooks/useStaffList";
@@ -85,6 +97,7 @@ export default function EvaluationAssignmentsPanel() {
   const [dueDate, setDueDate] = useState("");
   const [selectedRole, setSelectedRole] = useState<EvaluationAssignmentRole>("EVALUATOR");
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
+  const [deleteTarget, setDeleteTarget] = useState<number | null>(null);
 
   const toggleGroup = (key: string) => {
     setExpandedGroups((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -95,6 +108,7 @@ export default function EvaluationAssignmentsPanel() {
   const { data: schedules = [] } = useGetSchedulesByExam(selectedExamUuid);
   const { data: staffList = [] } = useStaffList();
   const assignMutation = useAssignTeacher();
+  const deleteMutation = useDeleteAssignment();
 
   const filtered = useMemo(() => {
     if (!search.trim()) return assignments;
@@ -148,6 +162,23 @@ export default function EvaluationAssignmentsPanel() {
     setTeacherIdInput("");
     setDueDate("");
     setSelectedRole("EVALUATOR");
+  };
+
+  const handleDeleteAssignment = (assignmentId: number) => {
+    setDeleteTarget(assignmentId);
+  };
+
+  const confirmDelete = () => {
+    if (!deleteTarget) return;
+    deleteMutation.mutate(deleteTarget, {
+      onSuccess: () => {
+        toast.success("Assignment removed successfully");
+        setDeleteTarget(null);
+      },
+      onError: () => {
+        toast.error("Failed to remove assignment. The staff member may have already started or uploaded files.");
+      },
+    });
   };
 
   if (isError) {
@@ -243,6 +274,7 @@ export default function EvaluationAssignmentsPanel() {
                             <th className="text-left p-3 font-medium text-muted-foreground">Role</th>
                             <th className="text-left p-3 font-medium text-muted-foreground">Status</th>
                             <th className="text-left p-3 font-medium text-muted-foreground">Due Date</th>
+                            <th className="text-right p-3 font-medium text-muted-foreground">Actions</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -291,6 +323,18 @@ export default function EvaluationAssignmentsPanel() {
                                       day: "numeric",
                                     })
                                     : "—"}
+                                </td>
+                                <td className="p-3 text-right">
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                                    onClick={() => handleDeleteAssignment(a.assignmentId)}
+                                    title="Remove assignment"
+                                    disabled={deleteMutation.isPending}
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </Button>
                                 </td>
                               </tr>
                             );
@@ -421,6 +465,29 @@ export default function EvaluationAssignmentsPanel() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation Alert Dialog */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove Assignment</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to remove this staff assignment? The staff member will immediately lose access to evaluate or upload for this schedule. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteMutation.isPending}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={(e) => { e.preventDefault(); confirmDelete(); }}
+              disabled={deleteMutation.isPending}
+            >
+              {deleteMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              Remove Assignment
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

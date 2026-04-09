@@ -26,6 +26,10 @@ import {
   Lock,
   CreditCard,
   Briefcase,
+  MessageSquare,
+  Bus,
+  HeartPulse,
+  Folder,
 } from "lucide-react";
 
 export type NavItem = {
@@ -169,4 +173,19 @@ export const TEACHER_NAV_ITEMS: NavItem[] = [
     path: "/dashboard/teacher/evaluation",
     icon: FileCheck,
   },
+];
+
+export const PARENT_NAV_ITEMS: NavItem[] = [
+  { label: "Dashboard", path: "/dashboard/parent", icon: LayoutDashboard, end: true },
+  { label: "Academics", path: "/dashboard/parent/academics", icon: BookOpen },
+  { label: "Attendance", path: "/dashboard/parent/attendance", icon: CalendarCheck },
+  { label: "Homework", path: "/dashboard/parent/homework", icon: FileText },
+  { label: "Fees", path: "/dashboard/parent/fees", icon: Receipt },
+  { label: "Communication", path: "/dashboard/parent/communication", icon: MessageSquare },
+  { label: "Calendar", path: "/dashboard/parent/calendar", icon: CalendarDays },
+  { label: "Transport", path: "/dashboard/parent/transport", icon: Bus },
+  { label: "Health", path: "/dashboard/parent/health", icon: HeartPulse },
+  { label: "Documents", path: "/dashboard/parent/documents", icon: Folder },
+  { label: "Notifications", path: "/dashboard/parent/notifications", icon: Bell },
+  { label: "Profile", path: "/dashboard/parent/profile", icon: User },
 ];

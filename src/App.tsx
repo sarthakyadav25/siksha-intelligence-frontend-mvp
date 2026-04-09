@@ -5,6 +5,7 @@ import { Toaster } from '@/components/ui/sonner'
 import AdminLayout from '@/components/layout/AdminLayout'
 import TeacherLayout from '@/components/layout/TeacherLayout'
 import StudentLayout from '@/components/layout/StudentLayout'
+import ParentLayout from '@/components/layout/ParentLayout'
 import { GuestOnly } from '@/routes/GuestOnly'
 import { ProtectedRoute } from '@/routes/ProtectedRoute'
 import { RoleBasedRoute } from '@/routes/RoleBasedRoute'
@@ -44,6 +45,19 @@ const TeacherLectureLogsPage = lazy(() => import('@/pages/dashboard/teacher/lect
 const StudentDashboard = lazy(() => import('@/pages/dashboard/student/page'))
 const StudentProfilePage = lazy(() => import('@/pages/dashboard/student/profile/page'))
 const StudentTimetablePage = lazy(() => import('@/pages/dashboard/student/timetable/page'))
+
+const ParentDashboardPage = lazy(() => import('@/pages/dashboard/parent/page'))
+const ParentAcademicsPage = lazy(() => import('@/pages/dashboard/parent/academics/page'))
+const ParentAttendancePage = lazy(() => import('@/pages/dashboard/parent/attendance/page'))
+const ParentHomeworkPage = lazy(() => import('@/pages/dashboard/parent/homework/page'))
+const ParentFeesPage = lazy(() => import('@/pages/dashboard/parent/fees/page'))
+const ParentCommunicationPage = lazy(() => import('@/pages/dashboard/parent/communication/page'))
+const ParentCalendarPage = lazy(() => import('@/pages/dashboard/parent/calendar/page'))
+const ParentTransportPage = lazy(() => import('@/pages/dashboard/parent/transport/page'))
+const ParentHealthPage = lazy(() => import('@/pages/dashboard/parent/health/page'))
+const ParentDocumentsPage = lazy(() => import('@/pages/dashboard/parent/documents/page'))
+const ParentNotificationsPage = lazy(() => import('@/pages/dashboard/parent/notifications/page'))
+const ParentProfilePage = lazy(() => import('@/pages/dashboard/parent/profile/page'))
 
 const SuperAdminOverviewPage = lazy(() => import('@/pages/dashboard/super-admin/overview/page'))
 const SuperAdminUsersPage = lazy(() => import('@/pages/dashboard/super-admin/users/page'))
@@ -177,6 +191,32 @@ export default function App() {
           <Route index element={withRouteSuspense(<StudentDashboard />)} />
           <Route path="profile" element={withRouteSuspense(<StudentProfilePage />)} />
           <Route path="timetable" element={withRouteSuspense(<StudentTimetablePage />)} />
+        </Route>
+
+        {/* Parent Dashboard */}
+        <Route
+          path="/dashboard/parent"
+          element={
+            <ProtectedRoute>
+              <RoleBasedRoute allowedRoles={['SUPER_ADMIN', 'ADMIN', 'PARENT']}>
+                <ParentLayout />
+              </RoleBasedRoute>
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={withRouteSuspense(<ParentDashboardPage />)} />
+          <Route path="academics" element={withRouteSuspense(<ParentAcademicsPage />)} />
+          <Route path="attendance" element={withRouteSuspense(<ParentAttendancePage />)} />
+          <Route path="homework" element={withRouteSuspense(<ParentHomeworkPage />)} />
+          <Route path="fees" element={withRouteSuspense(<ParentFeesPage />)} />
+          <Route path="communication" element={withRouteSuspense(<ParentCommunicationPage />)} />
+          <Route path="calendar" element={withRouteSuspense(<ParentCalendarPage />)} />
+          <Route path="transport" element={withRouteSuspense(<ParentTransportPage />)} />
+          <Route path="health" element={withRouteSuspense(<ParentHealthPage />)} />
+          <Route path="documents" element={withRouteSuspense(<ParentDocumentsPage />)} />
+          <Route path="notifications" element={withRouteSuspense(<ParentNotificationsPage />)} />
+          <Route path="profile" element={withRouteSuspense(<ParentProfilePage />)} />
+          <Route path="*" element={<Navigate to="/dashboard/parent" replace />} />
         </Route>
 
         {/* Redirect all unknown routes to home (which will redirect to login if not authenticated) */}

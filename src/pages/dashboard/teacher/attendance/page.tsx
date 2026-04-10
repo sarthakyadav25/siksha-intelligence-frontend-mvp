@@ -47,7 +47,7 @@ export default function TeacherAttendancePage() {
     if (!selectedSectionUuid) return;
     setDownloading(true);
     try {
-      const res = await teacherService.exportAttendanceSheet(selectedSectionUuid);
+      const res = await teacherService.exportAttendanceSheet(selectedSectionUuid, selectedDate);
       const blob = new Blob([res.data], { type: "application/pdf" });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -152,13 +152,15 @@ export default function TeacherAttendancePage() {
       </div>
 
       {mode === "grid" ? (
-        <QuickAttendanceGrid
-          students={students?.content ?? []}
-          sectionUuid={selectedSectionUuid ?? ""}
-          staffUuid={staffUuid}
-          selectedDate={selectedDate}
-          initialRecords={initialRecords}
-        />
+        <div className="space-y-4">
+          <QuickAttendanceGrid
+            students={students?.content ?? []}
+            sectionUuid={selectedSectionUuid ?? ""}
+            staffUuid={staffUuid}
+            selectedDate={selectedDate}
+            initialRecords={initialRecords}
+          />
+        </div>
       ) : (
         <div className="rounded-2xl border border-border bg-card p-6 text-sm text-muted-foreground">
           Swipe mode is kept as a fallback UX; grid mode is the default and primary flow now.

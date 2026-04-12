@@ -228,7 +228,7 @@ export default function ExamSchedulePanel({
 
   const openCreate = () => {
     setEditing(null);
-    setForm({ ...emptyForm, examDate: exam.startDate, startTime: "10:00", endTime: "13:00", maxStudentsPerSeat: 1, seatSide: "" });
+    setForm({ ...emptyForm, examDate: exam.startDate, startTime: "10:00", endTime: "11:00", maxStudentsPerSeat: 1, seatSide: "" });
     setDialogOpen(true);
   };
 

@@ -12,9 +12,10 @@ import {
   CalendarDays,
   Home,
   Map,
-
   ClipboardCheck,
   FileCheck,
+  Award,
+  Archive,
 
   Clock,
   DoorOpen,
@@ -26,6 +27,7 @@ import {
   Lock,
   CreditCard,
   Briefcase,
+  UserCheck,
   MessageSquare,
   Bus,
   HeartPulse,
@@ -89,6 +91,11 @@ export const STUDENT_NAV_ITEMS: NavItem[] = [
     icon: BookOpen,
   },
   {
+    label: "My Results",
+    path: "/dashboard/student/results",
+    icon: Award,
+  },
+  {
     label: "Attendance",
     path: "/dashboard/student/attendance",
     icon: CalendarCheck,
@@ -108,6 +115,16 @@ export const STUDENT_NAV_ITEMS: NavItem[] = [
     path: "/dashboard/student/notices",
     icon: Bell,
   },
+  {
+    label: "Past Papers",
+    path: "/dashboard/student/past-papers",
+    icon: Archive,
+  },
+  {
+    label: "My Admit Cards",
+    path: "/dashboard/student/admit-cards",
+    icon: FileCheck,
+  },
 ];
 
 export const SUPER_ADMIN_NAV_ITEMS: NavItem[] = [
@@ -117,13 +134,13 @@ export const SUPER_ADMIN_NAV_ITEMS: NavItem[] = [
     icon: LayoutDashboard,
     end: true,
   },
-  { label: "Users",         path: "/dashboard/super-admin/users",          icon: Users },
-  { label: "Roles & RBAC",  path: "/dashboard/super-admin/rbac",           icon: Shield },
-  { label: "System Health", path: "/dashboard/super-admin/health",         icon: Activity },
-  { label: "Audit Logs",    path: "/dashboard/super-admin/audit-logs",     icon: ClipboardList },
-  { label: "App Logs",      path: "/dashboard/super-admin/logs",           icon: Terminal },
-  { label: "Configuration", path: "/dashboard/super-admin/configuration",  icon: Settings2 },
-  { label: "Security",      path: "/dashboard/super-admin/security",       icon: Lock },
+  { label: "Users", path: "/dashboard/super-admin/users", icon: Users },
+  { label: "Roles & RBAC", path: "/dashboard/super-admin/rbac", icon: Shield },
+  { label: "System Health", path: "/dashboard/super-admin/health", icon: Activity },
+  { label: "Audit Logs", path: "/dashboard/super-admin/audit-logs", icon: ClipboardList },
+  { label: "App Logs", path: "/dashboard/super-admin/logs", icon: Terminal },
+  { label: "Configuration", path: "/dashboard/super-admin/configuration", icon: Settings2 },
+  { label: "Security", path: "/dashboard/super-admin/security", icon: Lock },
 ];
 
 export const TEACHER_NAV_ITEMS: NavItem[] = [
@@ -140,6 +157,11 @@ export const TEACHER_NAV_ITEMS: NavItem[] = [
   },
   {
     label: "Attendance",
+    path: "/dashboard/teacher/self-attendance",
+    icon: UserCheck,
+  },
+  {
+    label: "Class Attendance",
     path: "/dashboard/teacher/attendance",
     icon: CalendarCheck,
   },

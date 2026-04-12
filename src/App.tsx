@@ -35,6 +35,7 @@ const AdminHrmsPage = lazy(() => import('@/pages/dashboard/admin/hrms/page'))
 const TeacherDashboardPage = lazy(() => import('@/pages/dashboard/teacher/page'))
 const TeacherProfilePage = lazy(() => import('@/pages/dashboard/teacher/profile/page'))
 const TeacherSchedulePage = lazy(() => import('@/pages/dashboard/teacher/schedule/page'))
+const TeacherSelfAttendancePage = lazy(() => import('@/pages/dashboard/teacher/self-attendance/page'))
 const TeacherAttendancePage = lazy(() => import('@/pages/dashboard/teacher/attendance/page'))
 const TeacherClassesPage = lazy(() => import('@/pages/dashboard/teacher/classes/page'))
 const TeacherMyHrPage = lazy(() => import('@/pages/dashboard/teacher/my-hr/page'))
@@ -45,6 +46,9 @@ const TeacherLectureLogsPage = lazy(() => import('@/pages/dashboard/teacher/lect
 const StudentDashboard = lazy(() => import('@/pages/dashboard/student/page'))
 const StudentProfilePage = lazy(() => import('@/pages/dashboard/student/profile/page'))
 const StudentTimetablePage = lazy(() => import('@/pages/dashboard/student/timetable/page'))
+const StudentResultsPage = lazy(() => import('@/pages/dashboard/student/results/page'))
+const StudentPastPapersPage = lazy(() => import('@/pages/dashboard/student/past-papers/page'))
+const StudentAdmitCardsPage = lazy(() => import('@/pages/dashboard/student/admit-cards/page'))
 
 const ParentDashboardPage = lazy(() => import('@/pages/dashboard/parent/page'))
 const ParentAcademicsPage = lazy(() => import('@/pages/dashboard/parent/academics/page'))
@@ -167,6 +171,7 @@ export default function App() {
         >
           <Route index element={withRouteSuspense(<TeacherDashboardPage />)} />
           <Route path="my-class" element={withRouteSuspense(<TeacherMyClassPage />)} />
+          <Route path="self-attendance" element={withRouteSuspense(<TeacherSelfAttendancePage />)} />
           <Route path="attendance" element={withRouteSuspense(<TeacherAttendancePage />)} />
           <Route path="classes" element={withRouteSuspense(<TeacherClassesPage />)} />
           <Route path="profile" element={withRouteSuspense(<TeacherProfilePage />)} />
@@ -191,6 +196,9 @@ export default function App() {
           <Route index element={withRouteSuspense(<StudentDashboard />)} />
           <Route path="profile" element={withRouteSuspense(<StudentProfilePage />)} />
           <Route path="timetable" element={withRouteSuspense(<StudentTimetablePage />)} />
+          <Route path="results" element={withRouteSuspense(<StudentResultsPage />)} />
+          <Route path="past-papers" element={withRouteSuspense(<StudentPastPapersPage />)} />
+          <Route path="admit-cards" element={withRouteSuspense(<StudentAdmitCardsPage />)} />
         </Route>
 
         {/* Parent Dashboard */}

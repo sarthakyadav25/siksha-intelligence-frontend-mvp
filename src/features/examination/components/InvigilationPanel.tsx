@@ -50,6 +50,7 @@ import {
 } from "@/components/ui/table";
 import { useGetInvigilationsByExam, useAssignInvigilator, useRemoveInvigilator } from "../hooks/useInvigilationQueries";
 import { useGetAllExams, useGetSchedulesByExam } from "../hooks/useExaminationQueries";
+import { useGetAvailableRooms } from "../hooks/useSeatAllocationQueries";
 import { useGetRooms } from "@/features/academics/room_management/queries/useRoomQueries";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/axios";
@@ -93,6 +94,15 @@ export default function InvigilationPanel() {
     isLoading,
   } = useGetInvigilationsByExam(selectedScheduleId);
   const { data: allRooms = [] } = useGetRooms();
+  const { data: roomsAvailability = [] } = useGetAvailableRooms(selectedScheduleId);
+
+  // Derive rooms where students are actually sitting
+  const mappedRooms = useMemo(() => {
+    return roomsAvailability
+      .filter((r) => r.occupiedCapacity > 0)
+      .map((r) => ({ uuid: r.roomUuid, name: r.roomName }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [roomsAvailability]);
 
   const { data: staffPage } = useQuery<StaffPage>({
     queryKey: ["staff", "teachers", "all"],
@@ -543,16 +553,21 @@ export default function InvigilationPanel() {
                   <SelectValue placeholder="Select duty room" />
                 </SelectTrigger>
                 <SelectContent position="popper" className="max-h-[150px] overflow-y-auto">
-                  {allRooms?.map((r) => (
-                    <SelectItem key={r.uuid} value={r.uuid}>
-                      <span className="flex items-center gap-2">
-                        <DoorOpen className="w-3.5 h-3.5 text-muted-foreground" />
-                        {r.name}
-                      </span>
-                    </SelectItem>
-                  ))}
-                  {allRooms.length === 0 && (
-                    <div className="p-3 text-sm text-center text-muted-foreground">No physical rooms detected.</div>
+                  {mappedRooms.length > 0 ? (
+                    mappedRooms.map((r) => (
+                      <SelectItem key={r.uuid} value={r.uuid}>
+                        <span className="flex items-center gap-2">
+                          <DoorOpen className="w-3.5 h-3.5 text-muted-foreground" />
+                          {r.name}
+                        </span>
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <div className="p-3 text-sm text-center text-muted-foreground">
+                      {selectedScheduleId 
+                        ? "No students mapped in any room for this schedule." 
+                        : "Please select a schedule first."}
+                    </div>
                   )}
                 </SelectContent>
               </Select>

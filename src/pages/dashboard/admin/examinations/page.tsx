@@ -70,29 +70,14 @@ const tabs: {
     icon: FileText,
   },
   {
-    id: "grades",
-    label: "Grade Systems",
-    icon: Award,
-  },
-  {
-    id: "questions",
-    label: "Question Bank",
-    icon: HelpCircle,
-  },
-  {
-    id: "papers",
-    label: "Past Papers",
-    icon: BookOpen,
+    id: "seating",
+    label: "Seating Plan",
+    icon: Armchair,
   },
   {
     id: "invigilation",
     label: "Invigilation",
     icon: Shield,
-  },
-  {
-    id: "seating",
-    label: "Seating Plan",
-    icon: Armchair,
   },
   {
     id: "admitCards",
@@ -107,6 +92,21 @@ const tabs: {
   {
     id: "results",
     label: "Results",
+    icon: Award,
+  },
+  {
+    id: "papers",
+    label: "Past Papers",
+    icon: BookOpen,
+  },
+  {
+    id: "questions",
+    label: "Question Bank",
+    icon: HelpCircle,
+  },
+  {
+    id: "grades",
+    label: "Grade Systems",
     icon: Award,
   },
 ];

@@ -398,7 +398,9 @@ export default function ExamSchedulePanel({
             </TableHeader>
             <TableBody>
               <AnimatePresence>
-                {schedules.map((s) => (
+                {[...schedules]
+                  .sort((a, b) => b.scheduleId - a.scheduleId)
+                  .map((s) => (
                   <motion.tr
                     key={s.scheduleId}
                     initial={{ opacity: 0 }}

@@ -3,26 +3,8 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 
 import { Toaster } from '@/components/ui/sonner'
 import AdminLayout from '@/components/layout/AdminLayout'
-import AdminOverview from '@/pages/dashboard/admin/page'
-import StudentsPage from '@/pages/dashboard/admin/students/page'
-import StaffPage from '@/pages/dashboard/admin/staff/page'
-import SettingsPage from '@/pages/dashboard/admin/settings/page'
-import AdminTimetablePage from '@/pages/dashboard/admin/timetable/page'
-import AdminTimetableEditorPage from '@/pages/dashboard/admin/timetable/editor/page'
-import AdminTimetableReaderPage from '@/pages/dashboard/admin/timetable/reader/page'
-import AdminTimeslotsPage from '@/pages/dashboard/admin/timeslots/page'
-import UserDetailsPage from '@/pages/dashboard/admin/users/[id]/page'
-import CurriculumPage from '@/pages/dashboard/admin/curriculum/page'
 
-import ExaminationsPage from '@/pages/dashboard/admin/examinations/page'
-
-import AdminRoomsPage from '@/pages/dashboard/admin/rooms/page'
-import AdminFinancePage from './pages/dashboard/admin/finance/page'
-
-import IdCardsPage from '@/pages/dashboard/admin/id-cards/page'
 import TeacherDashboard from '@/pages/dashboard/teacher/page'
-import StudentDashboard from '@/pages/dashboard/student/page'
-import StudentProfilePage from '@/pages/dashboard/student/profile/page'
 import StudentLayout from '@/components/layout/StudentLayout'
 import { GuestOnly } from '@/routes/GuestOnly'
 import { ProtectedRoute } from '@/routes/ProtectedRoute'
@@ -30,6 +12,8 @@ import { RoleBasedRoute } from '@/routes/RoleBasedRoute'
 import SessionExpiredDialog from '@/components/common/SessionExpiredDialog'
 // SuperAdmin
 import SuperAdminLayout from '@/components/layout/SuperAdminLayout'
+import TeacherLayout from './components/layout/TeacherLayout'
+import AdminTransportPage from './pages/dashboard/admin/transport/page'
 
 const LoginPage = lazy(() => import('@/features/auth/LoginPage'))
 const HomePage = lazy(() => import('@/pages/HomePage'))
@@ -156,7 +140,8 @@ export default function App() {
           <Route path="examinations" element={withRouteSuspense(<ExaminationsPage />)} />
           <Route path="rooms" element={withRouteSuspense(<AdminRoomsPage />)} />
           <Route path="finance" element={withRouteSuspense(<AdminFinancePage />)} />
-          <Route path="hrms" element={withRouteSuspense(<AdminHrmsPage />)} />          <Route path="transport" element={<AdminTransportPage />} />
+          <Route path="hrms" element={withRouteSuspense(<AdminHrmsPage />)} />
+          <Route path="transport" element={<AdminTransportPage />} />
 
           <Route path="id-cards" element={withRouteSuspense(<IdCardsPage />)} />
           <Route path="users/:type/:id" element={withRouteSuspense(<UserDetailsPage />)} />

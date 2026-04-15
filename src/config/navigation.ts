@@ -189,7 +189,7 @@ export const TEACHER_NAV_ITEMS: NavItem[] = [
     icon: UserCheck,
   },
   {
-    label: "Class Attendance",
+    label: "Take Attendance",
     path: "/dashboard/teacher/attendance",
     icon: CalendarCheck,
   },

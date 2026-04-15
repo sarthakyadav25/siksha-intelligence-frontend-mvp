@@ -25,6 +25,7 @@ const roleToPathMap: Record<string, string> = {
   SUPER_ADMIN: '/dashboard/super-admin',
   ADMIN: '/dashboard/admin',
   TEACHER: '/dashboard/teacher',
+  SECURITY_GUARD: '/dashboard/security-guard',
   STUDENT: '/dashboard/student',
 }
 

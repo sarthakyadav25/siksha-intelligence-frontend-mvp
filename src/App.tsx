@@ -11,11 +11,14 @@ import { ProtectedRoute } from '@/routes/ProtectedRoute'
 import { RoleBasedRoute } from '@/routes/RoleBasedRoute'
 import SessionExpiredDialog from '@/components/common/SessionExpiredDialog'
 // SuperAdmin
-import SuperAdminLayout from '@/components/layout/SuperAdminLayout'
+import SuperAdminLayout from '@/components/layout/SuperAdminLayout';
+import SecurityGuardLayout from '@/components/layout/SecurityGuardLayout';
 import TeacherLayout from './components/layout/TeacherLayout'
 import AdminTransportPage from './pages/dashboard/admin/transport/page'
+import ApplicantLayout from './components/layout/ApplicantLayout'
 
 const LoginPage = lazy(() => import('@/features/auth/LoginPage'))
+const ApplicantSignupPage = lazy(() => import('@/features/auth/ApplicantSignupPage'))
 const HomePage = lazy(() => import('@/pages/HomePage'))
 
 const AdminOverview = lazy(() => import('@/pages/dashboard/admin/page'))
@@ -36,7 +39,7 @@ const AdminHrmsPage = lazy(() => import('@/pages/dashboard/admin/hrms/page'))
 
 const TeacherDashboardPage = lazy(() => import('@/pages/dashboard/teacher/page'))
 const TeacherProfilePage = lazy(() => import('@/pages/dashboard/teacher/profile/page'))
-const TeacherSchedulePage = lazy(() => import('@/pages/dashboard/teacher/schedule/page'))
+
 const TeacherSelfAttendancePage = lazy(() => import('@/pages/dashboard/teacher/self-attendance/page'))
 const TeacherAttendancePage = lazy(() => import('@/pages/dashboard/teacher/attendance/page'))
 const TeacherClassesPage = lazy(() => import('@/pages/dashboard/teacher/classes/page'))
@@ -52,6 +55,14 @@ const StudentResultsPage = lazy(() => import('@/pages/dashboard/student/results/
 const StudentPastPapersPage = lazy(() => import('@/pages/dashboard/student/past-papers/page'))
 const StudentAdmitCardsPage = lazy(() => import('@/pages/dashboard/student/admit-cards/page'))
 
+const SecurityGuardDashboard = lazy(() => import('@/pages/dashboard/security-guard/page'))
+const SecurityGuardVisitorManagement = lazy(() => import('@/pages/dashboard/security-guard/visitor-management/page'))
+const SecurityGuardPickupScannerPage = lazy(() => import('@/pages/dashboard/security-guard/pickup-scanner/page'))
+const AdminVisitorLogsPage = lazy(() => import('@/pages/dashboard/admin/visitor-logs/page'))
+const AdminPickupLogsPage = lazy(() => import('@/pages/dashboard/admin/pickup-logs/page'))
+const StudentPickupPage = lazy(() => import('@/pages/dashboard/student/pickup/page'))
+
+
 const SuperAdminOverviewPage = lazy(() => import('@/pages/dashboard/super-admin/overview/page'))
 const SuperAdminUsersPage = lazy(() => import('@/pages/dashboard/super-admin/users/page'))
 const SuperAdminRbacPage = lazy(() => import('@/pages/dashboard/super-admin/rbac/page'))
@@ -60,6 +71,13 @@ const SuperAdminAuditLogsPage = lazy(() => import('@/pages/dashboard/super-admin
 const SuperAdminLogsPage = lazy(() => import('@/pages/dashboard/super-admin/logs/page'))
 const SuperAdminConfigPage = lazy(() => import('@/pages/dashboard/super-admin/configuration/page'))
 const SuperAdminSecurityPage = lazy(() => import('@/pages/dashboard/super-admin/security/page'))
+
+const ApplicantOverviewPage = lazy(() => import('@/pages/dashboard/applicant/page'))
+const AdmissionEnquiryPage = lazy(() => import('@/pages/dashboard/applicant/enquiry/page'))
+const AdmissionFormPage = lazy(() => import('@/pages/dashboard/applicant/form/page'))
+const AdmissionPaymentPage = lazy(() => import('@/pages/dashboard/applicant/payment/page'))
+
+const AdminAdmissionDashboard = lazy(() => import('@/pages/dashboard/admin/admission/page'))
 
 function withRouteSuspense(node: ReactNode) {
   return (
@@ -79,6 +97,14 @@ export default function App() {
           element={
             <GuestOnly>
               {withRouteSuspense(<LoginPage />)}
+            </GuestOnly>
+          }
+        />
+        <Route
+          path="/admission/signup"
+          element={
+            <GuestOnly>
+              {withRouteSuspense(<ApplicantSignupPage />)}
             </GuestOnly>
           }
         />
@@ -145,8 +171,29 @@ export default function App() {
 
           <Route path="id-cards" element={withRouteSuspense(<IdCardsPage />)} />
           <Route path="users/:type/:id" element={withRouteSuspense(<UserDetailsPage />)} />
+          <Route path="visitor-logs" element={withRouteSuspense(<AdminVisitorLogsPage />)} />
+          <Route path="pickup-logs" element={withRouteSuspense(<AdminPickupLogsPage />)} />
+          <Route path="admission" element={withRouteSuspense(<AdminAdmissionDashboard />)} />
           {/* Catch-all for unknown admin sub-routes */}
           <Route path="*" element={<Navigate to="/dashboard/admin" replace />} />
+        </Route>
+
+        {/* Applicant Dashboard */}
+        <Route
+          path="/dashboard/applicant"
+          element={
+            <ProtectedRoute>
+              <RoleBasedRoute allowedRoles={['APPLICANT', 'ADMIN', 'SUPER_ADMIN']}>
+                <ApplicantLayout />
+              </RoleBasedRoute>
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={withRouteSuspense(<ApplicantOverviewPage />)} />
+          <Route path="enquiry" element={withRouteSuspense(<AdmissionEnquiryPage />)} />
+          <Route path="form" element={withRouteSuspense(<AdmissionFormPage />)} />
+          <Route path="payment" element={withRouteSuspense(<AdmissionPaymentPage />)} />
+          <Route path="*" element={<Navigate to="/dashboard/applicant" replace />} />
         </Route>
 
         {/* Teacher Dashboard — nested layout with sidebar */}
@@ -166,7 +213,7 @@ export default function App() {
           <Route path="attendance" element={withRouteSuspense(<TeacherAttendancePage />)} />
           <Route path="classes" element={withRouteSuspense(<TeacherClassesPage />)} />
           <Route path="profile" element={withRouteSuspense(<TeacherProfilePage />)} />
-          <Route path="schedule" element={withRouteSuspense(<TeacherSchedulePage />)} />
+
           <Route path="my-hr" element={withRouteSuspense(<TeacherMyHrPage />)} />
           <Route path="lecture-logs" element={withRouteSuspense(<TeacherLectureLogsPage />)} />
           <Route path="evaluation" element={withRouteSuspense(<TeacherEvaluationPage />)} />
@@ -187,6 +234,24 @@ export default function App() {
           <Route index element={withRouteSuspense(<StudentDashboard />)} />
           <Route path="profile" element={withRouteSuspense(<StudentProfilePage />)} />
           <Route path="timetable" element={withRouteSuspense(<StudentTimetablePage />)} />
+          <Route path="pickup" element={withRouteSuspense(<StudentPickupPage />)} />
+        </Route>
+
+        {/* Security Guard Dashboard */}
+        <Route
+          path="/dashboard/security-guard"
+          element={
+            <ProtectedRoute>
+              <RoleBasedRoute allowedRoles={['SUPER_ADMIN', 'ADMIN', 'SECURITY_GUARD']}>
+                <SecurityGuardLayout />
+              </RoleBasedRoute>
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={withRouteSuspense(<SecurityGuardDashboard />)} />
+          <Route path="visitor-management" element={withRouteSuspense(<SecurityGuardVisitorManagement />)} />
+          <Route path="pickup-scanner" element={withRouteSuspense(<SecurityGuardPickupScannerPage />)} />
+          <Route path="*" element={<Navigate to="/dashboard/security-guard" replace />} />
           <Route path="results" element={withRouteSuspense(<StudentResultsPage />)} />
           <Route path="past-papers" element={withRouteSuspense(<StudentPastPapersPage />)} />
           <Route path="admit-cards" element={withRouteSuspense(<StudentAdmitCardsPage />)} />

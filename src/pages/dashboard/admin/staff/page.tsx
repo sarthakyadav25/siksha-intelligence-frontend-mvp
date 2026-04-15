@@ -50,13 +50,20 @@ import { BulkPhotoUploadDialog } from "@/features/uis/id-card/BulkPhotoUploadDia
 import { idCardService, triggerBlobDownload } from "@/services/idCard";
 
 // ── Types ───────────────────────────────────────────────────────────
-type StaffType = "TEACHER" | "PRINCIPAL" | "LIBRARIAN";
+type StaffType = "TEACHER" | "PRINCIPAL" | "LIBRARIAN" | "SECURITY_GUARD";
 
 const STAFF_TYPE_OPTIONS: { value: StaffType; label: string }[] = [
   { value: "TEACHER", label: "Teacher" },
   { value: "PRINCIPAL", label: "Principal" },
   { value: "LIBRARIAN", label: "Librarian" },
+  { value: "SECURITY_GUARD", label: "Security Guard" },
 ];
+
+interface Designation {
+  designationId: number;
+  designationName: string;
+  category: string;
+}
 
 // ── Zod Schema ──────────────────────────────────────────────────────
 const staffSchema = z.object({
@@ -69,7 +76,8 @@ const staffSchema = z.object({
   category: z.enum(["TEACHING", "NON_TEACHING_SUPPORT", "NON_TEACHING_ADMIN"]),
   department: z.string().min(1, "Required"),
   hireDate: z.string().min(1, "Required"),
-  staffType: z.enum(["TEACHER", "PRINCIPAL", "LIBRARIAN"]),
+  designationId: z.string().min(1, "Required"),
+  staffType: z.enum(["TEACHER", "PRINCIPAL", "LIBRARIAN", "SECURITY_GUARD"]),
   gender: z.string().optional(),
   dateOfBirth: z.string().optional(),
   officeLocation: z.string().optional(),
@@ -110,17 +118,23 @@ export default function StaffPage() {
   const [submitting, setSubmitting] = useState(false);
   const [selectedStaffType, setSelectedStaffType] = useState<StaffType>("TEACHER");
   const [photoUploadOpen, setPhotoUploadOpen] = useState(false);
+  const [designations, setDesignations] = useState<Designation[]>([]);
   
   const form = useForm<StaffFormData>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(staffSchema) as any,
     defaultValues: {
       username: "", email: "", firstName: "", middleName: "", lastName: "",
-      jobTitle: "", hireDate: "", staffType: "TEACHER", gender: "",
-      category: "TEACHING", department: "",
+      jobTitle: "", hireDate: "", staffType: "TEACHER", gender: "", designationId: "",
       dateOfBirth: "", officeLocation: "", initialPassword: "",
     },
   });
+
+  useEffect(() => {
+    adminService.listDesignations()
+      .then(res => setDesignations(res.data))
+      .catch(console.error);
+  }, []);
 
   // ── Fetch staff (server-side) ─────────────────────────────────────
   const fetchStaff = useCallback(
@@ -189,6 +203,7 @@ export default function StaffPage() {
       gender: s.gender || "",
       dateOfBirth: s.dateOfBirth || "",
       officeLocation: s.officeLocation || "",
+      designationId: s.designationId ? String(s.designationId) : "",
     });
     setFormOpen(true);
   };
@@ -205,6 +220,10 @@ export default function StaffPage() {
   const handleEdit = async (data: StaffFormData) => {
     if (!editingStaff) return;
     setSubmitting(true);
+    const selectedDesig = designations.find(d => String(d.designationId) === data.designationId);
+    const desigId = selectedDesig?.designationId;
+    const cat = selectedDesig?.category;
+
     try {
       await adminService.updateStaff(editingStaff.uuid, {
         email: data.email || undefined,
@@ -217,6 +236,8 @@ export default function StaffPage() {
         hireDate: data.hireDate || undefined,
         officeLocation: data.officeLocation || undefined,
         staffType: data.staffType || undefined,
+        designationId: desigId,
+        category: cat,
       });
       toast.success("Staff member updated successfully");
       await fetchStaff(page, search, staffTypeFilter);
@@ -233,6 +254,10 @@ export default function StaffPage() {
 
   const handleCreate = async (data: StaffFormData) => {
     setSubmitting(true);
+    const selectedDesig = designations.find(d => String(d.designationId) === data.designationId);
+    const desigId = selectedDesig?.designationId;
+    const cat = selectedDesig?.category;
+
     try {
       if (data.staffType === "TEACHER") {
         await adminService.createTeacher({
@@ -291,6 +316,23 @@ export default function StaffPage() {
           category: data.category as any,
           department: data.department as any,
           hasMlisDegree: data.hasMlisDegree,
+        });
+      } else if (data.staffType === "SECURITY_GUARD") {
+        await adminService.createSecurityGuard({
+          username: data.username,
+          email: data.email,
+          initialPassword: data.initialPassword || undefined,
+          firstName: data.firstName,
+          middleName: data.middleName,
+          lastName: data.lastName,
+          jobTitle: data.jobTitle,
+          hireDate: data.hireDate,
+          officeLocation: data.officeLocation,
+          gender: data.gender as never,
+          dateOfBirth: data.dateOfBirth,
+          staffType: data.staffType,
+          designationId: desigId,
+          category: cat,
         });
       }
       toast.success("Staff member hired successfully");
@@ -725,6 +767,22 @@ export default function StaffPage() {
                   <p className="text-xs text-destructive">{form.formState.errors.lastName.message}</p>
                 )}
               </div>
+            </div>
+
+            {/* Designation */}
+            <div className="space-y-2">
+              <Label>Designation *</Label>
+              <Select value={form.watch("designationId") ?? ""} onValueChange={(val) => form.setValue("designationId", val)}>
+                <SelectTrigger><SelectValue placeholder="Select Designation" /></SelectTrigger>
+                <SelectContent>
+                  {designations.map(d => (
+                    <SelectItem key={d.designationId} value={String(d.designationId)}>{d.designationName}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {form.formState.errors.designationId && (
+                <p className="text-xs text-destructive">{form.formState.errors.designationId.message}</p>
+              )}
             </div>
 
             {/* Job Title + Hire Date */}

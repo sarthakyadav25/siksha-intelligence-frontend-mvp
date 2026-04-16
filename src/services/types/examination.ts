@@ -26,6 +26,7 @@ export interface ExamResponseDTO {
   createdBy: string;
   updatedBy: string;
   published: boolean;
+  timetablePublished: boolean;
 }
 
 // Exam Schedules
@@ -40,8 +41,7 @@ export interface ExamScheduleRequestDTO {
   duration: number;           // positive integer (minutes)
   maxMarks: number;           // positive integer
   passingMarks: number;       // positive integer, ≤ maxMarks
-  maxStudentsPerSeat?: number; // 1=single (default), 2=double/bench sharing
-  seatSide?: "LEFT" | "RIGHT"; // Side for double seating
+  maxStudentsPerSeat?: number; // 1=single, 2=double, 3=triple
   roomNumber?: string;
 }
 
@@ -62,8 +62,7 @@ export interface ExamScheduleResponseDTO {
   maxMarks: number;
   passingMarks?: number;
   totalStudents?: number;
-  maxStudentsPerSeat?: number; // 1=single, 2=double/bench sharing
-  seatSide?: "LEFT" | "RIGHT";
+  maxStudentsPerSeat?: number; // 1=single, 2=double, 3=triple
   roomNumber?: string;
 }
 
@@ -249,6 +248,18 @@ export interface PastPaperQueryParams {
 }
 
 // Admit Cards
+export type AdmitCardStatusEnum = "DRAFT" | "GENERATING" | "GENERATED" | "FAILED" | "PUBLISHED";
+
+export interface AdmitCardGenerationProgressDTO {
+  examId: number;
+  totalJobs: number;
+  completedJobs: number;
+  failedJobs: number;
+  pendingJobs: number;
+  progressPercent: number;
+  status: AdmitCardStatusEnum;
+  updatedAt: string;
+}
 export interface AdmitCardEntryResponseDTO {
   examScheduleId: number;
   subjectId: number;
@@ -270,7 +281,7 @@ export interface AdmitCardResponseDTO {
   studentName: string;
   enrollmentNumber?: string;
   generatedAt: string;
-  status: "DRAFT" | "PUBLISHED";
+  status: AdmitCardStatusEnum;
   pdfUrl?: string;
   publishedBy?: string;
   publishedAt?: string;

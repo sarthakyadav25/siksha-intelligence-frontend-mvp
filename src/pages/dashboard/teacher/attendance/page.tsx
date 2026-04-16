@@ -121,10 +121,10 @@ export default function TeacherAttendancePage() {
     <div className="mx-auto max-w-6xl space-y-5 pb-10">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold">Mark Attendance</h1>
+          <h1 className="text-2xl font-bold">Take Attendance</h1>
           <p className="text-sm text-muted-foreground">
             {selectedClassObj
-              ? `Class teacher attendance for ${selectedClassObj.className}-${selectedClassObj.sectionName}`
+              ? `Mark attendance for ${selectedClassObj.className}-${selectedClassObj.sectionName}`
               : "Select a class to mark attendance."}
           </p>
         </div>

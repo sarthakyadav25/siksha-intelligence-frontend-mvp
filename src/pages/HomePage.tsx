@@ -14,6 +14,7 @@ export default function HomePage() {
       ADMIN: '/dashboard/admin',
       TEACHER: '/dashboard/teacher',
       STUDENT: '/dashboard/student',
+      APPLICANT: '/dashboard/applicant',
       PARENT: '/dashboard/parent',
     }
 

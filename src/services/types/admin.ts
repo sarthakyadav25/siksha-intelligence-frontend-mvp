@@ -63,6 +63,12 @@ export interface CreateTeacherRequestDTO extends CreateUserRequestDTO {
   certifications?: string[];
   classesToTeach?: string[];
   staffType?: StaffType;
+<<<<<<< HEAD
+  designationId?: number;
+  category?: string;
+=======
+  designationCode: string;
+>>>>>>> 9b2f39c (chore(types): update admin attendance and payroll preflight types)
 }
 
 // Principal
@@ -75,6 +81,12 @@ export interface CreatePrincipalRequestDTO extends CreateUserRequestDTO {
   administrativeCertifications?: string[];
   schoolLevelManaged?: SchoolLevel;
   staffType?: StaffType;
+<<<<<<< HEAD
+  designationId?: number;
+  category?: string;
+=======
+  designationCode: string;
+>>>>>>> 9b2f39c (chore(types): update admin attendance and payroll preflight types)
 }
 
 // Librarian
@@ -87,6 +99,22 @@ export interface CreateLibrarianRequestDTO extends CreateUserRequestDTO {
   librarySystemPermissions?: string[];
   hasMlisDegree?: boolean;
   staffType?: StaffType;
+<<<<<<< HEAD
+  designationId?: number;
+  category?: string;
+}
+
+// Security Guard
+export interface CreateSecurityGuardRequestDTO extends CreateUserRequestDTO {
+  jobTitle: string;
+  hireDate: string;
+  officeLocation?: string;
+  designationId?: number;
+  category?: string;
+  staffType?: StaffType;
+=======
+  designationCode: string;
+>>>>>>> 9b2f39c (chore(types): update admin attendance and payroll preflight types)
 }
 
 // ── Edit DTOs (dedicated update endpoints) ───────────────────────────────
@@ -133,6 +161,8 @@ export interface UpdateStaffRequestDTO {
   officeLocation?: string;
   department?: Department;
   staffType?: StaffType;
+  designationId?: number;
+  category?: string;
   teachableSubjectIds?: string[];
 }
 

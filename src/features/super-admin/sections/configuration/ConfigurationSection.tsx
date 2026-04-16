@@ -5,6 +5,7 @@ import {
   Mail, HardDrive, Lock, Palette, ToggleLeft,
   Save, Eye, EyeOff, AlertTriangle, Loader2, CheckCircle2, Settings2,
   Cloud,
+  Bot,
   Clock3,
   MapPin,
 } from 'lucide-react'
@@ -25,6 +26,7 @@ import { Circle, MapContainer, Marker, TileLayer } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import type { AppSettingDTO, SettingUpdateRequest } from '@/features/super-admin/types'
+import AiConfigTab from './AiConfigTab'
 
 // ── Helpers ───────────────────────────────────────────────────────────
 
@@ -708,6 +710,7 @@ export default function ConfigurationSection() {
           <TabsTrigger value="security" className="gap-1.5"><Lock className="h-3.5 w-3.5" />Security</TabsTrigger>
           <TabsTrigger value="whitelabel" className="gap-1.5"><Palette className="h-3.5 w-3.5" />White-Label</TabsTrigger>
           <TabsTrigger value="features" className="gap-1.5"><ToggleLeft className="h-3.5 w-3.5" />Feature Flags</TabsTrigger>
+          <TabsTrigger value="ai" className="gap-1.5"><Bot className="h-3.5 w-3.5" />AI Assistant</TabsTrigger>
           <TabsTrigger value="attendance" className="gap-1.5"><Clock3 className="h-3.5 w-3.5" />Attendance</TabsTrigger>
         </TabsList>
 
@@ -761,6 +764,9 @@ export default function ConfigurationSection() {
           />
         </TabsContent>
 
+        <TabsContent value="ai">
+          <AiConfigTab />
+        </TabsContent>
         <TabsContent value="attendance" className="space-y-4">
           <SettingsGroupCard
             title="Attendance Edit Window"

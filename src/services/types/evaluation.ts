@@ -153,7 +153,10 @@ export interface AdminResultReviewResponseDTO {
   studentId: string;    // UUID
   studentName: string;
   enrollmentNumber: string;
+  examId: string;
   examName: string;
+  classId: string;
+  className: string;
   subjectName: string;
   totalMarks: number;
   status: EvaluationResultStatus;
@@ -191,4 +194,16 @@ export interface SubjectMarkDTO {
   subjectName: string;
   marksObtained: number;
   maxMarks: number;
+}
+
+export interface ClassResultSummaryResponseDTO {
+  classId: string;
+  className: string;
+  examId: string;
+  examName: string;
+  totalStudents: number;
+  evaluatedStudents: number;
+  absentStudents: number;
+  pendingStudents: number;
+  status: 'INCOMPLETE' | 'READY_FOR_APPROVAL' | 'APPROVED' | 'PUBLISHED';
 }

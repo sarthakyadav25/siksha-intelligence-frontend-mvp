@@ -45,6 +45,8 @@ const initialForm: StaffDesignationCreateUpdateDTO = {
   category: "TEACHING",
   description: "",
   sortOrder: 0,
+  defaultSalaryTemplateRef: undefined,
+  defaultGradeRef: undefined,
 };
 
 const categoryBadgeVariant: Record<StaffCategory, "default" | "secondary" | "outline"> = {
@@ -74,6 +76,16 @@ export default function DesignationManagement() {
       hrmsService
         .listDesignations({ category: categoryFilter === "ALL" ? undefined : categoryFilter })
         .then((res) => res.data),
+  });
+
+  const { data: salaryTemplates } = useQuery({
+    queryKey: ["hrms", "salary-templates"],
+    queryFn: () => hrmsService.listSalaryTemplates().then((res) => res.data.content),
+  });
+
+  const { data: staffGrades } = useQuery({
+    queryKey: ["hrms", "staff-grades"],
+    queryFn: () => hrmsService.listGrades().then((res) => res.data.content),
   });
 
   const refresh = () => queryClient.invalidateQueries({ queryKey: ["hrms", "designations"] });
@@ -128,6 +140,8 @@ export default function DesignationManagement() {
       category: row.category,
       description: row.description ?? "",
       sortOrder: row.sortOrder,
+      defaultSalaryTemplateRef: salaryTemplates?.find(t => t.templateId === row.defaultSalaryTemplateId)?.uuid,
+      defaultGradeRef: staffGrades?.find(g => g.gradeId === row.defaultGradeId)?.uuid,
     });
     setFieldErrors({});
     setFormOpen(true);
@@ -147,6 +161,16 @@ export default function DesignationManagement() {
         ),
       },
       { key: "sortOrder", header: "Sort" },
+      {
+        key: "defaultSalaryTemplateName",
+        header: "Salary Template",
+        render: (row) => row.defaultSalaryTemplateName || <span className="text-muted-foreground">-</span>,
+      },
+      {
+        key: "defaultGradeCode",
+        header: "Grade",
+        render: (row) => row.defaultGradeCode || <span className="text-muted-foreground">-</span>,
+      },
       {
         key: "active",
         header: "Status",
@@ -278,6 +302,51 @@ export default function DesignationManagement() {
                 placeholder="Optional description"
               />
             </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label>Default Salary Template</Label>
+                <Select
+                  value={form.defaultSalaryTemplateRef || "none"}
+                  onValueChange={(value) =>
+                    setForm((p) => ({ ...p, defaultSalaryTemplateRef: value === "none" ? undefined : value }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="No default template" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">No default template</SelectItem>
+                    {salaryTemplates?.map((template) => (
+                      <SelectItem key={template.uuid} value={template.uuid}>
+                        {template.templateName}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-2">
+                <Label>Default Staff Grade</Label>
+                <Select
+                  value={form.defaultGradeRef || "none"}
+                  onValueChange={(value) =>
+                    setForm((p) => ({ ...p, defaultGradeRef: value === "none" ? undefined : value }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="No default grade" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">No default grade</SelectItem>
+                    {staffGrades?.map((grade) => (
+                      <SelectItem key={grade.uuid} value={grade.uuid}>
+                        {grade.gradeCode} - {grade.gradeName}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
           </div>
 
           <DialogFooter>
@@ -308,6 +377,8 @@ export default function DesignationManagement() {
           <p>Code: <span className="font-medium">{form.designationCode || "-"}</span></p>
           <p>Name: <span className="font-medium">{form.designationName || "-"}</span></p>
           <p>Category: <span className="font-medium">{form.category}</span></p>
+          <p>Default Salary Template: <span className="font-medium">{salaryTemplates?.find(t => t.uuid === form.defaultSalaryTemplateRef)?.templateName || "None"}</span></p>
+          <p>Default Grade: <span className="font-medium">{staffGrades?.find(g => g.uuid === form.defaultGradeRef)?.gradeCode || "None"}</span></p>
           <p>Sort Order: <span className="font-medium">{form.sortOrder ?? 0}</span></p>
         </div>
       </ReviewDialog>

@@ -27,7 +27,11 @@ import {
   Lock,
   CreditCard,
   Briefcase,
+  QrCode,
   UserCheck,
+  Bus,
+  MessageSquare,
+  ClipboardSignature,
 } from "lucide-react";
 
 export type NavItem = {
@@ -60,8 +64,31 @@ export const ADMIN_NAV_ITEMS: NavItem[] = [
   { label: "HRMS", path: "/dashboard/admin/hrms", icon: Briefcase },
   { label: "Finance", path: "/dashboard/admin/finance", icon: Receipt },
 
+  { label: "Transport", path: "/dashboard/admin/transport", icon: Bus },
+  { label: "Admission", path: "/dashboard/admin/admission", icon: ClipboardSignature },
   { label: "Settings", path: "/dashboard/admin/settings", icon: Settings },
   { label: "ID Cards", path: "/dashboard/admin/id-cards", icon: CreditCard },
+  { label: "Visitor Logs", path: "/dashboard/admin/visitor-logs", icon: ClipboardList },
+  { label: "Pickup Logs", path: "/dashboard/admin/pickup-logs", icon: QrCode },
+];
+
+export const APPLICANT_NAV_ITEMS: NavItem[] = [
+  {
+    label: "Overview",
+    path: "/dashboard/applicant",
+    icon: LayoutDashboard,
+    end: true,
+  },
+  {
+    label: "Admission Enquiry",
+    path: "/dashboard/applicant/enquiry",
+    icon: MessageSquare,
+  },
+  {
+    label: "Admission Form",
+    path: "/dashboard/applicant/form",
+    icon: ClipboardSignature,
+  },
 ];
 
 export const STUDENT_NAV_ITEMS: NavItem[] = [
@@ -80,6 +107,11 @@ export const STUDENT_NAV_ITEMS: NavItem[] = [
     label: "Timetable",
     path: "/dashboard/student/timetable",
     icon: CalendarDays,
+  },
+  {
+    label: "Pickup QR",
+    path: "/dashboard/student/pickup",
+    icon: QrCode,
   },
   {
     label: "Academics",
@@ -130,13 +162,13 @@ export const SUPER_ADMIN_NAV_ITEMS: NavItem[] = [
     icon: LayoutDashboard,
     end: true,
   },
-  { label: "Users",         path: "/dashboard/super-admin/users",          icon: Users },
-  { label: "Roles & RBAC",  path: "/dashboard/super-admin/rbac",           icon: Shield },
-  { label: "System Health", path: "/dashboard/super-admin/health",         icon: Activity },
-  { label: "Audit Logs",    path: "/dashboard/super-admin/audit-logs",     icon: ClipboardList },
-  { label: "App Logs",      path: "/dashboard/super-admin/logs",           icon: Terminal },
-  { label: "Configuration", path: "/dashboard/super-admin/configuration",  icon: Settings2 },
-  { label: "Security",      path: "/dashboard/super-admin/security",       icon: Lock },
+  { label: "Users", path: "/dashboard/super-admin/users", icon: Users },
+  { label: "Roles & RBAC", path: "/dashboard/super-admin/rbac", icon: Shield },
+  { label: "System Health", path: "/dashboard/super-admin/health", icon: Activity },
+  { label: "Audit Logs", path: "/dashboard/super-admin/audit-logs", icon: ClipboardList },
+  { label: "App Logs", path: "/dashboard/super-admin/logs", icon: Terminal },
+  { label: "Configuration", path: "/dashboard/super-admin/configuration", icon: Settings2 },
+  { label: "Security", path: "/dashboard/super-admin/security", icon: Lock },
 ];
 
 export const TEACHER_NAV_ITEMS: NavItem[] = [
@@ -157,7 +189,7 @@ export const TEACHER_NAV_ITEMS: NavItem[] = [
     icon: UserCheck,
   },
   {
-    label: "Class Attendance",
+    label: "Take Attendance",
     path: "/dashboard/teacher/attendance",
     icon: CalendarCheck,
   },
@@ -177,11 +209,6 @@ export const TEACHER_NAV_ITEMS: NavItem[] = [
     icon: FileText,
   },
   {
-    label: "Schedule",
-    path: "/dashboard/teacher/schedule",
-    icon: CalendarDays,
-  },
-  {
     label: "My HR",
     path: "/dashboard/teacher/my-hr",
     icon: Briefcase,
@@ -190,5 +217,24 @@ export const TEACHER_NAV_ITEMS: NavItem[] = [
     label: "Evaluation",
     path: "/dashboard/teacher/evaluation",
     icon: FileCheck,
+  },
+];
+
+export const SECURITY_GUARD_NAV_ITEMS: NavItem[] = [
+  {
+    label: "Overview",
+    path: "/dashboard/security-guard",
+    icon: LayoutDashboard,
+    end: true,
+  },
+  {
+    label: "Visitor Management",
+    path: "/dashboard/security-guard/visitor-management",
+    icon: Shield,
+  },
+  {
+    label: "Pickup Scanner",
+    path: "/dashboard/security-guard/pickup-scanner",
+    icon: QrCode,
   },
 ];

@@ -68,6 +68,9 @@ export interface StudentAttendanceQueryParams {
   sort?: string;
   studentUuid?: string;
   takenByStaffUuid?: string;
+  classUuid?: string;
+  sectionUuid?: string;
+  search?: string;
 
   // Deprecated fallback query fields.
   studentId?: number;

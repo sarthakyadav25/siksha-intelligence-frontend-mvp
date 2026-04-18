@@ -33,7 +33,7 @@ export function ChildSummaryCard({ child }: { child: ChildSummary }) {
       
       <div className="mt-6 flex justify-end">
         <Button variant="outline" size="sm" className="bg-background/50 backdrop-blur-sm" asChild>
-          <Link to="/dashboard/parent/profile">View Full Profile <ChevronRight className="ml-1.5 h-4 w-4" /></Link>
+          <Link to="/dashboard/parent/student-profile">View Full Profile <ChevronRight className="ml-1.5 h-4 w-4" /></Link>
         </Button>
       </div>
     </div>

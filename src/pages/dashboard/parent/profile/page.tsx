@@ -1,15 +1,59 @@
-import { User, Mail, Phone, MapPin, Edit, Shield } from "lucide-react";
+import { User, Mail, Phone, MapPin, Edit, Shield, Loader2, AlertCircle } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
-import { useAppSelector } from "@/store/hooks";
+import { useQuery } from "@tanstack/react-query";
+import { profileService } from "@/services/profile";
 import { UserAvatar } from "@/components/shared/UserAvatar";
+import { useAppSelector } from "@/store/hooks";
 
 export default function ProfilePage() {
-  const { user } = useAppSelector(state => state.auth);
+  const { user: authUser } = useAppSelector(state => state.auth);
   const [isEditing, setIsEditing] = useState(false);
+
+  const { data: profileResponse, isLoading, isError } = useQuery({
+    queryKey: ["my-profile"],
+    queryFn: async () => {
+      const res = await profileService.getMyProfile();
+      return res.data;
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[50vh]">
+        <Loader2 className="w-8 h-8 text-primary animate-spin mb-4" />
+        <p className="text-muted-foreground font-medium">Loading profile...</p>
+      </div>
+    );
+  }
+
+  if (isError || !profileResponse) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[50vh] p-6 text-center border rounded-2xl bg-rose-500/5 border-rose-500/20 max-w-xl mx-auto my-12">
+        <AlertCircle className="h-10 w-10 text-rose-500 mb-4" />
+        <h3 className="text-lg font-bold">Failed to load profile</h3>
+        <p className="text-muted-foreground mt-2">Could not fetch your profile data from the server. Please try again later.</p>
+      </div>
+    );
+  }
+
+  const { basicProfile, addresses, guardianDetails } = profileResponse;
+  
+  // Extract values, preferring the complete ComprehensiveUserProfile over Redux
+  const profileName = [basicProfile?.firstName, basicProfile?.middleName, basicProfile?.lastName].filter(Boolean).join(" ") || authUser?.username;
+  const profileEmail = basicProfile?.email || authUser?.email || "No email registered";
+  // Parent phone might be on guardianDetails or basicProfile
+  const profilePhone = guardianDetails?.phoneNumber || basicProfile?.username || "No phone registered"; // Sometimes username is phone
+  
+  // Address formatting
+  const primaryAddress = addresses?.find(a => a.addressType === "HOME") || addresses?.[0];
+  const addressString = primaryAddress 
+    ? [primaryAddress.addressLine1, primaryAddress.addressLine2, primaryAddress.city, primaryAddress.state, primaryAddress.postalCode].filter(Boolean).join(", ")
+    : "No registered address found";
 
   return (
     <div className="max-w-[1000px] mx-auto space-y-6 pb-12">
@@ -28,10 +72,10 @@ export default function ProfilePage() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="p-6 md:col-span-1 flex flex-col items-center text-center space-y-4">
-          <UserAvatar name={user?.username || "Parent Profile"} profileUrl={user?.profileUrl} className="w-32 h-32 text-4xl shadow-sm border-4 border-background ring-4 ring-primary/20" />
+          <UserAvatar name={profileName} profileUrl={basicProfile?.profileUrl} className="w-32 h-32 text-4xl shadow-sm border-4 border-background ring-4 ring-primary/20" />
           <div>
-            <h2 className="text-xl font-bold">{user?.username || "Mr. Rahul Sharma"}</h2>
-            <p className="text-muted-foreground">{user?.email || "parent@edusync.com"}</p>
+            <h2 className="text-xl font-bold">{profileName || "Parent Profile"}</h2>
+            <p className="text-muted-foreground">{profileEmail}</p>
             <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-widest">
               <Shield className="w-3 h-3" /> Guardian Account
             </div>
@@ -46,7 +90,7 @@ export default function ProfilePage() {
               <Label>Full Name</Label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input disabled={!isEditing} defaultValue={user?.username || "Rahul Sharma"} className="pl-9" />
+                <Input disabled={!isEditing} defaultValue={profileName} className="pl-9" />
               </div>
             </div>
             
@@ -54,7 +98,7 @@ export default function ProfilePage() {
               <Label>Email Address</Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input disabled={!isEditing} defaultValue={user?.email || "parent@edusync.com"} className="pl-9" />
+                <Input disabled={!isEditing} defaultValue={profileEmail} className="pl-9" />
               </div>
             </div>
 
@@ -62,7 +106,7 @@ export default function ProfilePage() {
               <Label>Phone Number</Label>
               <div className="relative">
                 <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input disabled={!isEditing} defaultValue="+91 98765 43210" className="pl-9" />
+                <Input disabled={!isEditing} defaultValue={profilePhone} className="pl-9" />
               </div>
             </div>
 
@@ -70,7 +114,11 @@ export default function ProfilePage() {
               <Label>Residential Address</Label>
               <div className="relative">
                 <MapPin className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
-                <textarea disabled={!isEditing} defaultValue="B-402, Green Valley Apartments, Kharadi, Pune, Maharashtra 411014" className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 pl-9" />
+                <textarea 
+                  disabled={!isEditing} 
+                  defaultValue={addressString} 
+                  className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 pl-9" 
+                />
               </div>
             </div>
           </div>

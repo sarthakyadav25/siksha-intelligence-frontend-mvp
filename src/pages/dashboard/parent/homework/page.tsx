@@ -33,20 +33,7 @@ export default function HomeworkPage() {
     );
   }
 
-  // Generate a mock submitted item to show filter functionality since mock only has pending
-  const assignments = [
-    ...homework.assignments,
-    {
-      assignmentId: "hw-mock-sub",
-      subject: "History",
-      title: "World War II Essay",
-      description: "Write a 500 word essay on the causes.",
-      dueDate: new Date(Date.now() - 86400000).toISOString(),
-      status: "SUBMITTED",
-      teacherName: "Mr. Singh",
-      seenByParent: true
-    }
-  ];
+  const assignments = homework.assignments;
 
   const filteredAssignments = assignments.filter(a => {
     if (filter === 'ALL') return true;

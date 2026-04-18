@@ -33,7 +33,6 @@ import {
   MessageSquare,
   ClipboardSignature,
   HeartPulse,
-  Folder,
 } from "lucide-react";
 
 export type NavItem = {
@@ -269,7 +268,6 @@ export const PARENT_NAV_ITEMS: NavItem[] = [
   { label: "Calendar", path: "/dashboard/parent/calendar", icon: CalendarDays },
   { label: "Transport", path: "/dashboard/parent/transport", icon: Bus },
   { label: "Health", path: "/dashboard/parent/health", icon: HeartPulse },
-  { label: "Documents", path: "/dashboard/parent/documents", icon: Folder },
   { label: "Notifications", path: "/dashboard/parent/notifications", icon: Bell },
   { label: "Profile", path: "/dashboard/parent/profile", icon: User },
 ];

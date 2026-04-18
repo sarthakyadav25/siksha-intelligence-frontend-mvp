@@ -111,6 +111,7 @@ const ParentHealthPage = lazy(() => import('@/pages/dashboard/parent/health/page
 const ParentDocumentsPage = lazy(() => import('@/pages/dashboard/parent/documents/page'))
 const ParentNotificationsPage = lazy(() => import('@/pages/dashboard/parent/notifications/page'))
 const ParentProfilePage = lazy(() => import('@/pages/dashboard/parent/profile/page'))
+const ParentStudentProfilePage = lazy(() => import('@/pages/dashboard/parent/student-profile/page'))
 
 const SuperAdminOverviewPage = lazy(() => import('@/pages/dashboard/super-admin/overview/page'))
 const SuperAdminUsersPage = lazy(() => import('@/pages/dashboard/super-admin/users/page'))
@@ -367,6 +368,7 @@ export default function App() {
           <Route path="documents" element={withRouteSuspense(<ParentDocumentsPage />)} />
           <Route path="notifications" element={withRouteSuspense(<ParentNotificationsPage />)} />
           <Route path="profile" element={withRouteSuspense(<ParentProfilePage />)} />
+          <Route path="student-profile" element={withRouteSuspense(<ParentStudentProfilePage />)} />
           <Route path="*" element={<Navigate to="/dashboard/parent" replace />} />
         </Route>
 

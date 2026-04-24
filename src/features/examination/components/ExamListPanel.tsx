@@ -11,6 +11,7 @@ import {
   ChevronRight,
   FileText,
   Loader2,
+  Shield,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,6 +29,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useAppDispatch } from "@/store/hooks";
+import { refreshSession } from "@/store/slices/authSlice";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -45,6 +48,8 @@ import {
   useDeleteExam,
   usePublishExam,
 } from "../hooks/useExaminationQueries";
+import { useControllerAssignmentMutation } from "../hooks/useExamControllerQueries";
+import { useStaffList } from "@/features/hrms/hooks/useStaffList";
 import type {
   ExamRequestDTO,
   ExamResponseDTO,
@@ -85,7 +90,9 @@ export default function ExamListPanel({ onViewSchedules }: Props) {
   const updateExam = useUpdateExam();
   const deleteExam = useDeleteExam();
   const publishExam = usePublishExam();
-
+  const assignController = useControllerAssignmentMutation();
+  const { data: staffList = [], isLoading: staffLoading } = useStaffList();
+  const dispatch = useAppDispatch();
 
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<string>("ALL");
@@ -94,6 +101,8 @@ export default function ExamListPanel({ onViewSchedules }: Props) {
   const [deleteTarget, setDeleteTarget] = useState<ExamResponseDTO | null>(
     null
   );
+  const [assignTarget, setAssignTarget] = useState<ExamResponseDTO | null>(null);
+  const [selectedStaffId, setSelectedStaffId] = useState<string>("");
 
   // Form state
   const [form, setForm] = useState<ExamRequestDTO>({
@@ -308,6 +317,18 @@ export default function ExamListPanel({ onViewSchedules }: Props) {
                     <Button
                       variant="ghost"
                       size="sm"
+                      className="h-8 w-8 p-0 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-500/10"
+                      onClick={() => {
+                        setAssignTarget(exam);
+                        setSelectedStaffId("");
+                      }}
+                      title="Assign Controller"
+                    >
+                      <Shield className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       className="h-8 w-8 p-0"
                       onClick={() => openEdit(exam)}
                       title="Edit"
@@ -471,6 +492,78 @@ export default function ExamListPanel({ onViewSchedules }: Props) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Assign Controller Dialog */}
+      <Dialog open={!!assignTarget} onOpenChange={(o) => !o && setAssignTarget(null)}>
+        <DialogContent className="sm:max-w-[420px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Shield className="w-5 h-5 text-indigo-600" />
+              Assign Exam Controller
+            </DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-2">
+            <p className="text-sm text-muted-foreground">
+              Assign a staff member as the Examination Controller for{" "}
+              <span className="font-semibold text-foreground">{assignTarget?.name}</span>.
+              They will be able to monitor rooms, mark attendance, and manage defaulters.
+            </p>
+            <div className="grid gap-1.5">
+              <label className="text-sm font-medium">
+                Staff Member <span className="text-destructive">*</span>
+              </label>
+              <Select value={selectedStaffId} onValueChange={setSelectedStaffId}>
+                <SelectTrigger>
+                  <SelectValue placeholder={staffLoading ? "Loading staff..." : "Select a staff member"} />
+                </SelectTrigger>
+                <SelectContent>
+                  {staffList.map((staff) => (
+                    <SelectItem key={staff.staffId} value={staff.staffId.toString()}>
+                      {staff.firstName} {staff.lastName} — {staff.employeeId}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="outline" onClick={() => setAssignTarget(null)}>
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  if (!assignTarget?.id) {
+                    toast.error("Exam ID is missing from the exam data. Backend must return the numeric 'id'.");
+                    return;
+                  }
+                  if (!selectedStaffId) {
+                    toast.error("Please select a staff member");
+                    return;
+                  }
+                  
+                  const payload = {
+                    examId: Number(assignTarget.id),
+                    staffId: Number(selectedStaffId),
+                  };
+
+                  assignController.mutate(payload, { 
+                    onSuccess: () => {
+                      setAssignTarget(null);
+                      dispatch(refreshSession());
+                    }
+                  });
+                }}
+                disabled={!selectedStaffId || assignController.isPending}
+                className="bg-indigo-600 hover:bg-indigo-700"
+              >
+                {assignController.isPending && (
+                  <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
+                )}
+                Assign Controller
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

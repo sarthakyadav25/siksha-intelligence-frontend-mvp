@@ -22,6 +22,7 @@ import StudentTimetablePage from './pages/dashboard/student/timetable/page'
 import StudentResultsPage from './pages/dashboard/student/results/page'
 import StudentPastPapersPage from './pages/dashboard/student/past-papers/page'
 import StudentAdmitCardsPage from './pages/dashboard/student/admit-cards/page'
+import ExamControllerLayout from './components/layout/ExamControllerLayout'
 
 const LoginPage = lazy(() => import('@/features/auth/LoginPage'))
 const ApplicantSignupPage = lazy(() => import('@/features/auth/ApplicantSignupPage'))
@@ -131,6 +132,10 @@ const AdmissionFormPage = lazy(() => import('@/pages/dashboard/applicant/form/pa
 const AdmissionPaymentPage = lazy(() => import('@/pages/dashboard/applicant/payment/page'))
 const AdminAdmissionDashboard = lazy(() => import('@/pages/dashboard/admin/admission/page'))
 const AdminDisciplinePage = lazy(() => import('@/pages/dashboard/admin/discipline/page'))
+
+const ExamControllerDashboardPage = lazy(() => import('@/pages/dashboard/exam-controller/page'))
+const ExamControllerRoomPage = lazy(() => import('@/pages/dashboard/exam-controller/room/[roomId]/page'))
+const ExamControllerClassPage = lazy(() => import('@/pages/dashboard/exam-controller/class/page'))
 
 function withRouteSuspense(node: ReactNode) {
   return (
@@ -324,6 +329,22 @@ export default function App() {
           <Route path="attendance" element={withRouteSuspense(<InvigilatorRoomsPage />)} />
           <Route path="attendance/:examScheduleId/:roomId" element={withRouteSuspense(<RoomAttendancePage />)} />
           <Route path="*" element={<Navigate to="/dashboard/invigilator/attendance" replace />} />
+        </Route>
+
+        {/* Exam Controller Routes */}
+        <Route
+          path="/dashboard/exam-controller"
+          element={
+            <ProtectedRoute>
+              <RoleBasedRoute allowedRoles={['SUPER_ADMIN', 'SCHOOL_ADMIN', 'ADMIN', 'EXAM_CONTROLLER']}>
+                <ExamControllerLayout />
+              </RoleBasedRoute>
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={withRouteSuspense(<ExamControllerDashboardPage />)} />
+          <Route path="room/:roomId" element={withRouteSuspense(<ExamControllerRoomPage />)} />
+          <Route path="class" element={withRouteSuspense(<ExamControllerClassPage />)} />
         </Route>
 
         {/* Student Dashboard - All roles (students and above) */}

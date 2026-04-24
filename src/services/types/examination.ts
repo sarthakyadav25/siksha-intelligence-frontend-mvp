@@ -13,6 +13,7 @@ export interface ExamRequestDTO {
 }
 
 export interface ExamResponseDTO {
+  id: number;                     // Numeric DB primary key (Long)
   uuid: string;
   name: string;
   academicYear: string;

@@ -143,11 +143,13 @@ export const useControllerFinalizeAttendanceMutation = () => {
 };
 
 export const useControllerAssignmentMutation = () => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: ExamControllerAssignmentRequestDTO) =>
       examControllerService.assignController(data).then(res => res.data),
     onSuccess: (data) => {
       toast.success(`${data.staffName} assigned as Exam Controller`);
+      queryClient.invalidateQueries({ queryKey: ["examination", "exams"] });
     },
     onError: () => {
       toast.error('Failed to assign controller. The staff member may already be assigned.');

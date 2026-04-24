@@ -28,6 +28,9 @@ export interface ExamResponseDTO {
   updatedBy: string;
   published: boolean;
   timetablePublished: boolean;
+  assignedControllerId?: number;
+  assignedControllerName?: string;
+  remainingAttempts?: number;
 }
 
 // Exam Schedules

@@ -136,6 +136,7 @@ const AdminDisciplinePage = lazy(() => import('@/pages/dashboard/admin/disciplin
 const ExamControllerDashboardPage = lazy(() => import('@/pages/dashboard/exam-controller/page'))
 const ExamControllerRoomPage = lazy(() => import('@/pages/dashboard/exam-controller/room/[roomId]/page'))
 const ExamControllerClassPage = lazy(() => import('@/pages/dashboard/exam-controller/class/page'))
+const ExamControllerExaminationsPage = lazy(() => import('@/pages/dashboard/exam-controller/examinations/page'))
 
 function withRouteSuspense(node: ReactNode) {
   return (
@@ -345,6 +346,8 @@ export default function App() {
           <Route index element={withRouteSuspense(<ExamControllerDashboardPage />)} />
           <Route path="room/:roomId" element={withRouteSuspense(<ExamControllerRoomPage />)} />
           <Route path="class" element={withRouteSuspense(<ExamControllerClassPage />)} />
+          <Route path="examinations" element={withRouteSuspense(<ExamControllerExaminationsPage />)} />
+          <Route path="*" element={<Navigate to="/dashboard/exam-controller" replace />} />
         </Route>
 
         {/* Student Dashboard - All roles (students and above) */}

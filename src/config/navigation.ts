@@ -279,6 +279,7 @@ export const PARENT_NAV_ITEMS: NavItem[] = [
 ];
 
 export const EXAM_CONTROLLER_NAV_ITEMS: NavItem[] = [
+  // ── Live Monitoring ──
   {
     label: "Control Tower",
     path: "/dashboard/exam-controller",
@@ -289,5 +290,11 @@ export const EXAM_CONTROLLER_NAV_ITEMS: NavItem[] = [
     label: "Class View",
     path: "/dashboard/exam-controller/class",
     icon: Users,
+  },
+  // ── Exam Management ──
+  {
+    label: "Examinations",
+    path: "/dashboard/exam-controller/examinations",
+    icon: ClipboardCheck,
   },
 ];

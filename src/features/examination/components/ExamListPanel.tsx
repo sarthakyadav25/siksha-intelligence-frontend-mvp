@@ -29,7 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useAppDispatch } from "@/store/hooks";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { refreshSession } from "@/store/slices/authSlice";
 import {
   AlertDialog,
@@ -103,6 +103,9 @@ export default function ExamListPanel({ onViewSchedules }: Props) {
   );
   const [assignTarget, setAssignTarget] = useState<ExamResponseDTO | null>(null);
   const [selectedStaffId, setSelectedStaffId] = useState<string>("");
+  const [assignConfirmOpen, setAssignConfirmOpen] = useState(false);
+  const userRoles = useAppSelector((s) => s.auth.user?.roles || []);
+  const isAdmin = userRoles.some(r => ['ROLE_SUPER_ADMIN', 'ROLE_ADMIN', 'ROLE_SCHOOL_ADMIN'].includes(r));
 
   // Form state
   const [form, setForm] = useState<ExamRequestDTO>({
@@ -299,6 +302,13 @@ export default function ExamListPanel({ onViewSchedules }: Props) {
                           {exam.templateName}
                         </span>
                       )}
+                      {exam.assignedControllerName && (
+                        <span className="flex items-center gap-1 text-indigo-600/80 font-medium" title={`Remaining assignment changes: ${exam.remainingAttempts ?? 3}`}>
+                          <Shield className="w-3.5 h-3.5" />
+                          {exam.assignedControllerName} 
+                          <span className="text-xs text-muted-foreground ml-1">({exam.remainingAttempts ?? 3} left)</span>
+                        </span>
+                      )}
                     </div>
                   </div>
 
@@ -314,18 +324,20 @@ export default function ExamListPanel({ onViewSchedules }: Props) {
                         <Send className="w-4 h-4" />
                       </Button>
                     )}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 w-8 p-0 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-500/10"
-                      onClick={() => {
-                        setAssignTarget(exam);
-                        setSelectedStaffId("");
-                      }}
-                      title="Assign Controller"
-                    >
-                      <Shield className="w-4 h-4" />
-                    </Button>
+                    {isAdmin && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-500/10"
+                        onClick={() => {
+                          setAssignTarget(exam);
+                          setSelectedStaffId("");
+                        }}
+                        title="Assign Controller"
+                      >
+                        <Shield className="w-4 h-4" />
+                      </Button>
+                    )}
                     <Button
                       variant="ghost"
                       size="sm"
@@ -506,8 +518,13 @@ export default function ExamListPanel({ onViewSchedules }: Props) {
             <p className="text-sm text-muted-foreground">
               Assign a staff member as the Examination Controller for{" "}
               <span className="font-semibold text-foreground">{assignTarget?.name}</span>.
-              They will be able to monitor rooms, mark attendance, and manage defaulters.
             </p>
+            
+            <div className="bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-300 p-3 rounded-lg text-sm">
+              <p className="font-semibold mb-1">Assignment Limits</p>
+              <p>You have <strong>{assignTarget?.remainingAttempts ?? 3}</strong> assignment changes remaining for this exam. Once zero, no further changes can be made.</p>
+            </div>
+
             <div className="grid gap-1.5">
               <label className="text-sm font-medium">
                 Staff Member <span className="text-destructive">*</span>
@@ -539,31 +556,63 @@ export default function ExamListPanel({ onViewSchedules }: Props) {
                     toast.error("Please select a staff member");
                     return;
                   }
-                  
-                  const payload = {
-                    examId: Number(assignTarget.id),
-                    staffId: Number(selectedStaffId),
-                  };
-
-                  assignController.mutate(payload, { 
-                    onSuccess: () => {
-                      setAssignTarget(null);
-                      dispatch(refreshSession());
-                    }
-                  });
+                  setAssignConfirmOpen(true);
                 }}
-                disabled={!selectedStaffId || assignController.isPending}
+                disabled={!selectedStaffId || assignController.isPending || (assignTarget?.remainingAttempts ?? 3) <= 0}
                 className="bg-indigo-600 hover:bg-indigo-700"
               >
-                {assignController.isPending && (
-                  <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
-                )}
-                Assign Controller
+                Proceed
               </Button>
             </div>
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Confirmation Dialog */}
+      <AlertDialog open={assignConfirmOpen} onOpenChange={setAssignConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Controller Assignment</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to assign this staff member as the Examination Controller?
+              <br/><br/>
+              <strong>Note:</strong> You only have {(assignTarget?.remainingAttempts ?? 3)} attempts left. If this user is replacing another controller, the previous controller will lose dashboard access if they have no other active exams.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (!assignTarget?.id || !selectedStaffId) return;
+                const payload = {
+                  examId: Number(assignTarget.id),
+                  staffId: Number(selectedStaffId),
+                };
+
+                assignController.mutate(payload, { 
+                  onSuccess: () => {
+                    setAssignConfirmOpen(false);
+                    setAssignTarget(null);
+                    dispatch(refreshSession());
+                    toast.success("Controller assigned successfully");
+                  },
+                  onError: (err: any) => {
+                    setAssignConfirmOpen(false);
+                    toast.error(err?.response?.data?.message || "Failed to assign controller");
+                  }
+                });
+              }}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white"
+            >
+              {assignController.isPending ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                "Yes, Assign Controller"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

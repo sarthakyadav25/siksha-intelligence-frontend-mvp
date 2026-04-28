@@ -279,7 +279,9 @@ function AssignmentCard({
 function StudentsUploadPanel({
   scheduleId,
   role,
-  onBack,
+  // onBack is part of the component interface but navigation is handled via URL params in this panel
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  onBack: _onBack,
   onEvaluate,
 }: {
   scheduleId: number;

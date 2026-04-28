@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { api } from "@/lib/axios";
 import { useChildStore } from "@/features/parent/stores/useChildStore";
-import type { ComprehensiveUserProfileResponseDTO, StudentMedicalRecordDTO } from "@/services/types/profile";
+import type { ComprehensiveUserProfileResponseDTO } from "@/services/types/profile";
 
 export default function HealthPage() {
   const { selectedChildId } = useChildStore();

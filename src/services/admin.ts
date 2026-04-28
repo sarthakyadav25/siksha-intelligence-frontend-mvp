@@ -226,7 +226,39 @@ export const adminService = {
       },
     });
   },
+
+  // ── HR Admin Promotion ───────────────────────────────────────────────
+
+  /**
+   * POST /auth/admin/users/staff/{staffId}/promote-hr-admin
+   * Additively grants ROLE_HR_ADMIN to a staff member. Preserves all existing roles.
+   * Accessible by SUPER_ADMIN and SCHOOL_ADMIN.
+   */
+  promoteToHrAdmin(staffId: string) {
+    return api.post<string>(`/auth/admin/users/staff/${staffId}/promote-hr-admin`);
+  },
+
+  /**
+   * DELETE /auth/admin/users/staff/{staffId}/demote-hr-admin
+   * Removes ROLE_HR_ADMIN from a staff member. Preserves all other roles.
+   * Accessible by SUPER_ADMIN and SCHOOL_ADMIN.
+   */
+  demoteFromHrAdmin(staffId: string) {
+    return api.delete<string>(`/auth/admin/users/staff/${staffId}/demote-hr-admin`);
+  },
+
+  /**
+   * GET /auth/admin/users/generate-username
+   * Returns a unique username suggestion derived from the given firstName and lastName.
+   */
+  generateUsername(firstName: string, lastName: string) {
+    return api.get<{ username: string; available: boolean }>(
+      "/auth/admin/users/generate-username",
+      { params: { firstName, lastName } }
+    );
+  },
 };
+
 
 export interface BulkUploadReportDTO {
   success: number;

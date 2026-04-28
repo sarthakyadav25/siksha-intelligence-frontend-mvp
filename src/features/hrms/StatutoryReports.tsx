@@ -175,11 +175,18 @@ export default function StatutoryReports() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Statutory Reports</h1>
-        <p className="text-sm text-muted-foreground">
-          Generate and download compliance reports for PF, ESI, PT, and TDS
-        </p>
+      {/* Hero Header */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-900 via-indigo-800 to-violet-900 p-5 text-white shadow-lg">
+        <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/10 blur-xl" />
+        <div className="relative flex items-center gap-3">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/20 text-2xl shadow-inner">
+            📊
+          </div>
+          <div>
+            <h2 className="text-xl font-bold tracking-tight">Statutory Reports</h2>
+            <p className="text-sm text-white/70">Generate and download compliance reports for PF, ESI, PT, and TDS</p>
+          </div>
+        </div>
       </div>
 
       {/* Period Selector */}

@@ -5,11 +5,11 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
 } from "recharts";
 import {
-  IndianRupee, TrendingUp, TrendingDown, Clock, AlertTriangle,
+  IndianRupee, TrendingUp, Clock, AlertTriangle,
   FileText, Percent, Users, ArrowUpRight, ArrowDownRight,
   BarChart3, Activity, Zap,
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { AdminDashboardSummaryDTO, InvoiceResponseDTO, PaymentResponseDTO } from "@/services/types/finance";
 import { formatINR, formatINRCompact, computeCollectionRate, groupByMonth } from "../finance/utils/financeUtils";

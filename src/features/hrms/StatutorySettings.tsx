@@ -128,23 +128,32 @@ export default function StatutorySettings() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Statutory Settings</h1>
-          <p className="text-sm text-muted-foreground">
-            Configure PF, ESI, and Professional Tax parameters
-          </p>
+      {/* Hero Header */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-700 via-gray-800 to-zinc-900 p-5 text-white shadow-lg">
+        <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/10 blur-xl" />
+        <div className="relative flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/20 text-2xl shadow-inner">
+              🏛️
+            </div>
+            <div>
+              <h2 className="text-xl font-bold tracking-tight">Statutory Settings</h2>
+              <p className="text-sm text-white/70">Configure PF, ESI, and Professional Tax parameters</p>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            {!isNew && !editing && (
+              <Button variant="outline" size="sm" onClick={() => setEditing(true)} className="bg-white/20 border-white/30 text-white hover:bg-white/30">
+                ✏️ Edit Settings
+              </Button>
+            )}
+            {editing && (
+              <Button variant="ghost" size="sm" onClick={() => { setEditing(false); setForm(buildDefaultForm(config)); }} className="text-white hover:bg-white/20">
+                Cancel
+              </Button>
+            )}
+          </div>
         </div>
-        {!isNew && !editing && (
-          <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
-            Edit
-          </Button>
-        )}
-        {editing && (
-          <Button variant="ghost" size="sm" onClick={() => { setEditing(false); setForm(buildDefaultForm(config)); }}>
-            Cancel
-          </Button>
-        )}
       </div>
 
       <div className="max-w-2xl space-y-6">

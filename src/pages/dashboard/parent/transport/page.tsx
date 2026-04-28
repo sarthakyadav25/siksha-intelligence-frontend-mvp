@@ -1,4 +1,4 @@
-import { Bus, MapPin, Navigation, PhoneCall, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { Bus, MapPin, Navigation, PhoneCall, CheckCircle2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 

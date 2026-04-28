@@ -6,8 +6,6 @@ import {
   Clock,
   RotateCcw,
   AlignJustify,
-  Search,
-  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -68,12 +66,6 @@ interface Props {
 
 type LastAction = { idx: number; previousCode: LocalCode };
 
-// ── JUMP_CONF: color for jump list status dot
-const JUMP_DOT: Record<LocalCode, string> = {
-  P: "bg-emerald-500",
-  A: "bg-red-500",
-  L: "bg-amber-500",
-};
 
 // ── Main component ───────────────────────────────────────────────────
 export default function SequentialMarkingView({
@@ -91,8 +83,8 @@ export default function SequentialMarkingView({
   const [direction, setDirection] = useState(1);
   const [undoStack, setUndoStack] = useState<LastAction[]>([]);
   const [done, setDone] = useState(false);
-  const [showJump, setShowJump] = useState(false);
-  const [jumpSearch, setJumpSearch] = useState("");
+  const [_showJump, _setShowJump] = useState(false);
+  const [_jumpSearch, _setJumpSearch] = useState("");
 
   const total = students.length;
   const student = students[currentIdx];
@@ -124,13 +116,6 @@ export default function SequentialMarkingView({
     setDone(false);
   };
 
-  const jumpTo = (idx: number) => {
-    setDirection(idx > currentIdx ? 1 : -1);
-    setCurrentIdx(idx);
-    setDone(false);
-    setShowJump(false);
-    setJumpSearch("");
-  };
 
   // ── Summary / Done screen ─────────────────────────────────────────
   if (done) {

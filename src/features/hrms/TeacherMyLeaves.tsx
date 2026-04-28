@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
-import { Plus } from "lucide-react";
+import {} from "lucide-react";
 import { toast } from "sonner";
 import ConfirmDialog from "@/components/common/ConfirmDialog";
 import DataTable, { type Column } from "@/components/common/DataTable";
@@ -213,30 +213,39 @@ export default function TeacherMyLeaves() {
           </p>
         </div>
       )}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h3 className="text-base font-semibold">My Leave Requests</h3>
-        <div className="flex items-center gap-2">
-          <Select value={status} onValueChange={(v) => setStatus(v as "ALL" | LeaveStatus)}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Filter status" />
-            </SelectTrigger>
-            <SelectContent>
-              {statusOptions.map((opt) => (
-                <SelectItem key={opt} value={opt}>{opt}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
 
-          <Button
-            size="sm"
-            onClick={() => {
-              setApplyForm(initialApplyForm);
-              setFieldErrors({});
-              setApplyOpen(true);
-            }}
-          >
-            <Plus className="mr-2 h-4 w-4" /> Apply Leave
-          </Button>
+      {/* Hero Header */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-violet-600 via-purple-600 to-fuchsia-700 p-5 text-white shadow-lg">
+        <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/10 blur-xl" />
+        <div className="relative flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/20 text-2xl shadow-inner">
+              🏖️
+            </div>
+            <div>
+              <h2 className="text-xl font-bold tracking-tight">My Leave Requests</h2>
+              <p className="text-sm text-white/70">Apply, track and manage your leave applications</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Select value={status} onValueChange={(v) => setStatus(v as "ALL" | LeaveStatus)}>
+              <SelectTrigger className="w-[130px] bg-white/20 border-white/30 text-white">
+                <SelectValue placeholder="Filter status" />
+              </SelectTrigger>
+              <SelectContent>
+                {statusOptions.map((opt) => (
+                  <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button
+              size="sm"
+              onClick={() => { setApplyForm(initialApplyForm); setFieldErrors({}); setApplyOpen(true); }}
+              className="bg-white text-violet-700 hover:bg-white/90 font-semibold gap-1 shadow-sm"
+            >
+              ➕ Apply Leave
+            </Button>
+          </div>
         </div>
       </div>
 

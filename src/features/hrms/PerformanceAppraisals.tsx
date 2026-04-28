@@ -317,17 +317,23 @@ export default function PerformanceAppraisals() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Performance Appraisals</h1>
-          <p className="text-sm text-muted-foreground">
-            Manage appraisal cycles, goals, and performance reviews
-          </p>
+      {/* Hero Header */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-rose-500 via-pink-600 to-fuchsia-700 p-5 text-white shadow-lg">
+        <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/10 blur-xl" />
+        <div className="relative flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/20 text-2xl shadow-inner">
+              ⭐
+            </div>
+            <div>
+              <h2 className="text-xl font-bold tracking-tight">Performance Appraisals</h2>
+              <p className="text-sm text-white/70">Manage appraisal cycles, goals, and performance reviews</p>
+            </div>
+          </div>
+          <Button onClick={() => setCycleFormOpen(true)} className="bg-white text-rose-700 hover:bg-white/90 font-semibold shadow-sm">
+            ➕ New Cycle
+          </Button>
         </div>
-        <Button onClick={() => setCycleFormOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          New Cycle
-        </Button>
       </div>
 
       {isLoading ? (

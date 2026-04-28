@@ -6,7 +6,7 @@ import {
   CheckCircle2,
   Clock,
   Loader2,
-  Plus,
+  
   Search,
   Trash2,
   TrendingUp,
@@ -640,30 +640,34 @@ export default function SalaryStaffMapping() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight">Salary Mapping</h2>
-          <p className="mt-0.5 text-sm text-muted-foreground">
-            Assign salary templates to staff and manage compensation structures.
-          </p>
-        </div>
-        <div className="flex gap-2 shrink-0">
-          <Button variant="outline" size="sm" onClick={() => setView("bulk")} className="gap-1.5">
-            <Users className="h-4 w-4" />
-            Bulk Assign
-          </Button>
-          <Button
-            size="sm"
-            onClick={() => {
-              setView("current");
-              openCreate();
-            }}
-            className="gap-1.5"
-          >
-            <Plus className="h-4 w-4" />
-            Assign Template
-          </Button>
+      {/* Hero Header */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-rose-500 via-pink-600 to-fuchsia-700 p-5 text-white shadow-lg">
+        <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/10 blur-xl" />
+        <div className="relative flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/20 text-2xl shadow-inner">
+              💸
+            </div>
+            <div>
+              <h2 className="text-xl font-bold tracking-tight">Salary Mapping</h2>
+              <p className="text-sm text-white/70">Assign salary templates to staff and manage compensation structures</p>
+            </div>
+          </div>
+          <div className="flex gap-2 shrink-0">
+            <Button
+              variant="outline"
+              onClick={() => setView("bulk")}
+              className="bg-white/20 border-white/30 text-white hover:bg-white/30 backdrop-blur-sm gap-1.5"
+            >
+              👥 Bulk Assign
+            </Button>
+            <Button
+              onClick={() => { setView("current"); openCreate(); }}
+              className="bg-white text-rose-700 hover:bg-white/90 font-semibold gap-1.5 shadow-sm"
+            >
+              ➕ Assign Template
+            </Button>
+          </div>
         </div>
       </div>
 

@@ -10,7 +10,7 @@ export function useRealtimeEvents() {
   const [events, setEvents] = useState<SystemEvent[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [status, setStatus] = useState<ConnectionStatus>('connecting');
-  const [lastEventTime, setLastEventTime] = useState<string | undefined>(undefined);
+  const [_lastEventTime, setLastEventTime] = useState<string | undefined>(undefined);
   
   const eventSourceRef = useRef<EventSource | null>(null);
   const retryCount = useRef(0);

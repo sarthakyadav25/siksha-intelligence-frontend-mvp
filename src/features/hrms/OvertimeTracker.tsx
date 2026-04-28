@@ -5,7 +5,7 @@ import {
   CheckCircle2,
   Clock,
   Loader2,
-  Plus,
+  
   XCircle,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -42,6 +42,8 @@ const OT_STATUS_COLORS: Record<OvertimeStatus, string> = {
     "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300",
   INCLUDED_IN_PAYROLL:
     "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300",
+  PAID:
+    "bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-300",
 };
 
 interface OtFormState {
@@ -160,22 +162,34 @@ export default function OvertimeTracker() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Overtime & Comp-Off</h1>
-          <p className="text-sm text-muted-foreground">
-            Track and approve overtime hours and compensatory-off credits
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setCompOffOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Comp-Off
-          </Button>
-          <Button onClick={() => setOtFormOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            Record Overtime
-          </Button>
+      {/* Hero Header */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-amber-500 via-orange-500 to-rose-600 p-5 text-white shadow-lg">
+        <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/10 blur-xl" />
+        <div className="relative flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/20 text-2xl shadow-inner">
+              ⏱️
+            </div>
+            <div>
+              <h2 className="text-xl font-bold tracking-tight">Overtime &amp; Comp-Off</h2>
+              <p className="text-sm text-white/70">Track and approve overtime hours and compensatory-off credits</p>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setCompOffOpen(true)}
+              className="bg-white/20 border-white/30 text-white hover:bg-white/30 backdrop-blur-sm gap-1.5"
+            >
+              🔄 Add Comp-Off
+            </Button>
+            <Button
+              onClick={() => setOtFormOpen(true)}
+              className="bg-white text-amber-700 hover:bg-white/90 font-semibold gap-1.5 shadow-sm"
+            >
+              ➕ Record Overtime
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -209,7 +223,7 @@ export default function OvertimeTracker() {
                       {formatDate(ot.workDate)} · {ot.hoursWorked}h worked
                       {ot.approvedAt != null && ` · approved`}
                     </p>
-                    {ot.compensationType === "CASH" && (ot.status === "APPROVED" || ot.status === "CONVERTED" || ot.status === "INCLUDED_IN_PAYROLL") && (
+                    {ot.compensationType === "CASH" && (ot.status === "APPROVED" || ot.status === "PAID" || ot.status === "INCLUDED_IN_PAYROLL") && (
                       <p className="text-xs font-semibold text-primary mt-1">
                         Payout: {ot.approvedAmount ? formatCurrency(ot.approvedAmount) : "Pending"} <span className="text-muted-foreground font-normal">(Rate: {ot.multiplier}x)</span>
                       </p>

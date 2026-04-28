@@ -15,24 +15,27 @@ import {
   Layers,
   Banknote,
   PieChart as PieChartIcon,
-  Bell
+  Bell,
+  ShieldAlert,
+  ArrowRightLeft,
+  TimerOff,
 } from "lucide-react";
 
 import { financeService } from "@/services/finance";
 import { adminService } from "@/services/admin";
 import { classesService } from "@/services/classes";
 import { dashboardService } from "@/services/dashboard";
-import type { MasterAnalyticsResponseDTO } from "@/services/dashboard";
+import type { MasterAnalyticsResponseDTO, HrmsDashboardSummaryDTO } from "@/services/dashboard";
 
-import { 
-  RevenuePayrollChart, 
-  AttendanceTrendChart, 
+import {
+  RevenuePayrollChart,
+  AttendanceTrendChart,
   DemographicsPieChart,
   MiniSparkline
 } from "./components/DashboardCharts";
 import { LiveActivityFeed, SmartAlertsWidget } from "./components/LiveFeeds";
 import { NotificationDrawer } from "./components/NotificationDrawer";
-import { TransportRadialWidget, LibraryRadialWidget } from "./components/MockModules";
+import {  LibraryRadialWidget } from "./components/MockModules";
 import { useRealtimeEvents } from "@/hooks/useRealtimeEvents";
 
 // ── Helpers & Formatters ──────────────────────────────────────────────
@@ -102,9 +105,61 @@ function MetricKpi({ title, value, subtitle, icon: Icon, gradientClass, trend, l
   );
 }
 
+// ── Proxy Coverage Mini-Widget ────────────────────────────────────────
+function ProxyCoverageWidget({ hrms }: { hrms: HrmsDashboardSummaryDTO | null }) {
+  if (!hrms) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <div className="h-8 w-32 animate-pulse rounded-lg bg-muted" />
+      </div>
+    );
+  }
+
+  const items = [
+    {
+      label: "Uncovered Proxy Periods",
+      value: hrms.pendingProxyCount,
+      icon: ArrowRightLeft,
+      accent: hrms.pendingProxyCount > 0 ? "text-amber-600 bg-amber-500/10" : "text-emerald-600 bg-emerald-500/10",
+      actionUrl: "/dashboard/admin/proxy",
+    },
+    {
+      label: "Pending Late Clock-Ins",
+      value: hrms.pendingLateClockInCount,
+      icon: TimerOff,
+      accent: hrms.pendingLateClockInCount > 0 ? "text-rose-600 bg-rose-500/10" : "text-emerald-600 bg-emerald-500/10",
+      actionUrl: "/dashboard/admin/staff/late-clockin",
+    },
+    {
+      label: "Pending Leave Requests",
+      value: hrms.pendingLeaveApplications,
+      icon: FileText,
+      accent: hrms.pendingLeaveApplications > 0 ? "text-violet-600 bg-violet-500/10" : "text-emerald-600 bg-emerald-500/10",
+      actionUrl: "/dashboard/admin/hrms",
+    },
+    {
+      label: "Absent Today",
+      value: hrms.todayAbsent,
+      icon: ShieldAlert,
+      accent: hrms.todayAbsent > 0 ? "text-red-600 bg-red-500/10" : "text-emerald-600 bg-emerald-500/10",
+    },
+  ];
+
+  return (
+    <div className="grid grid-cols-2 gap-3 h-full">
+      {items.map((it) => (
+        <div key={it.label} className={`flex flex-col items-center justify-center gap-1 rounded-2xl border p-3 ${it.accent.split(" ")[1]}`}>
+          <it.icon className={`h-5 w-5 ${it.accent.split(" ")[0]}`} />
+          <span className={`text-2xl font-extrabold ${it.accent.split(" ")[0]}`}>{it.value}</span>
+          <span className="text-[10px] font-semibold text-center text-muted-foreground leading-tight">{it.label}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // ── Main Dashboard Page ───────────────────────────────────────────────
 export default function AdminOverview() {
-  // State
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -118,31 +173,32 @@ export default function AdminOverview() {
     pendingInvoices: 0
   });
   const [masterAnalytics, setMasterAnalytics] = useState<MasterAnalyticsResponseDTO | null>(null);
+  const [hrmsSummary, setHrmsSummary] = useState<HrmsDashboardSummaryDTO | null>(null);
 
   const fetchAll = async (silent = false) => {
     if (!silent) setLoading(true);
     else setRefreshing(true);
     try {
-      const [summaryRes, studentsRes, staffRes, classesRes, analyticsRes] = await Promise.allSettled([
+      const [summaryRes, studentsRes, staffRes, classesRes, analyticsRes, hrmsRes] = await Promise.allSettled([
         financeService.getAdminDashboardSummary(),
         adminService.listStudents({ page: 0, size: 1 }),
         adminService.listStaff({ page: 0, size: 1 }),
         classesService.getClasses(),
         dashboardService.getMasterAnalytics(),
+        dashboardService.getHrmsSummary(),
       ]);
-      
+
       setStats({
-        collected: summaryRes.status === "fulfilled" ? summaryRes.value.data.totalCollected : 8450000,
-        outstanding: summaryRes.status === "fulfilled" ? summaryRes.value.data.totalOutstanding : 1200000,
-        pendingInvoices: summaryRes.status === "fulfilled" ? summaryRes.value.data.pendingInvoicesCount : 15,
-        studentCount: studentsRes.status === "fulfilled" ? studentsRes.value.data.totalElements : 2405,
-        staffCount: staffRes.status === "fulfilled" ? staffRes.value.data.totalElements : 165,
-        classCount: classesRes.status === "fulfilled" ? classesRes.value.data.length : 32
+        collected: summaryRes.status === "fulfilled" ? summaryRes.value.data.totalCollected : 0,
+        outstanding: summaryRes.status === "fulfilled" ? summaryRes.value.data.totalOutstanding : 0,
+        pendingInvoices: summaryRes.status === "fulfilled" ? summaryRes.value.data.pendingInvoicesCount : 0,
+        studentCount: studentsRes.status === "fulfilled" ? studentsRes.value.data.totalElements : 0,
+        staffCount: staffRes.status === "fulfilled" ? staffRes.value.data.totalElements : 0,
+        classCount: classesRes.status === "fulfilled" ? classesRes.value.data.length : 0
       });
 
-      if (analyticsRes.status === "fulfilled") {
-        setMasterAnalytics(analyticsRes.value.data);
-      }
+      if (analyticsRes.status === "fulfilled") setMasterAnalytics(analyticsRes.value.data);
+      if (hrmsRes.status === "fulfilled") setHrmsSummary(hrmsRes.value.data);
     } catch {
       toast.error("Failed to load some dashboard data");
     } finally {
@@ -151,20 +207,38 @@ export default function AdminOverview() {
     }
   };
 
-  useEffect(() => { fetchAll(); }, []);
+  useEffect(() => {
+    fetchAll();
+    // Auto-refresh every 90 seconds
+    const interval = setInterval(() => {
+      // Skip polling when the tab is hidden — no wasted backend requests
+      if (document.visibilityState === 'visible') fetchAll(true);
+    }, 90_000);
+    return () => clearInterval(interval);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ── Chart Data ──────────────────────────────────────
-  const financePayrollData = useMemo(() => {
-    return masterAnalytics?.financePayrollTrend || [];
-  }, [masterAnalytics]);
+  const financePayrollData = useMemo(() => masterAnalytics?.financePayrollTrend || [], [masterAnalytics]);
+  const attendanceData = useMemo(() => masterAnalytics?.attendanceTrend || [], [masterAnalytics]);
+  const demographicsData = useMemo(() => masterAnalytics?.demographics || [], [masterAnalytics]);
 
-  const attendanceData = useMemo(() => {
-    return masterAnalytics?.attendanceTrend || [];
-  }, [masterAnalytics]);
+  // ── Campus Presence from live HRMS data ─────────────
+  const campusPresenceDisplay = useMemo(() => {
+    if (!hrmsSummary) return "—";
+    return `${hrmsSummary.staffPresentPercent.toFixed(1)}%`;
+  }, [hrmsSummary]);
 
-  const demographicsData = useMemo(() => {
-    return masterAnalytics?.demographics || [];
-  }, [masterAnalytics]);
+  const campusPresenceSubtitle = useMemo(() => {
+    if (!hrmsSummary) return "Loading attendance data…";
+    return `${hrmsSummary.todayPresent} Present · ${hrmsSummary.todayAbsent} Absent · ${hrmsSummary.todayOnLeave} On Leave`;
+  }, [hrmsSummary]);
+
+  // ── Pending Actions count (proxy + late clockin + leave) ─────────
+  const pendingActionsCount = useMemo(() => {
+    if (!hrmsSummary) return unreadCount;
+    return hrmsSummary.pendingProxyCount + hrmsSummary.pendingLateClockInCount + hrmsSummary.pendingLeaveApplications;
+  }, [hrmsSummary, unreadCount]);
 
   const now = new Date();
   const timeGreet = now.getHours() < 12 ? "Good morning" : now.getHours() < 17 ? "Good afternoon" : "Good evening";
@@ -172,13 +246,13 @@ export default function AdminOverview() {
   // ── Render ──────────────────────────────────────────────────────────
   return (
     <motion.div variants={container} initial="hidden" animate="show" className="space-y-6 pb-20 max-w-[1600px] mx-auto pt-2">
-      
+
       {/* ── Header Area ──────────────────────────────────────────────── */}
       <motion.div variants={item} className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-2">
         <div>
           <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-bold tracking-wide uppercase mb-3 ${
-            status === 'connected' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-700 dark:text-emerald-400' : 
-            status === 'reconnecting' ? 'bg-amber-500/10 border-amber-500/20 text-amber-700 dark:text-amber-400' : 
+            status === 'connected' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-700 dark:text-emerald-400' :
+            status === 'reconnecting' ? 'bg-amber-500/10 border-amber-500/20 text-amber-700 dark:text-amber-400' :
             'bg-zinc-500/10 border-zinc-500/20 text-zinc-700 dark:text-zinc-400'
           }`}>
              <span className="relative flex h-2 w-2">
@@ -193,11 +267,11 @@ export default function AdminOverview() {
             {timeGreet}, Admin
           </h1>
           <p className="mt-2 text-sm text-muted-foreground max-w-xl">
-            Welcome to your command center. Here is the aggregated performance of Finance, HRMS, and Operations metrics for today.
+            Welcome to your command center. Aggregated Finance, HRMS, and Operations intelligence — refreshed every 90 seconds.
           </p>
         </div>
         <div className="flex items-center gap-3">
-           <button 
+           <button
              onClick={() => setIsDrawerOpen(true)}
              className="relative inline-flex items-center justify-center rounded-xl border border-border bg-card p-2.5 text-muted-foreground shadow-sm transition hover:bg-accent hover:text-foreground"
            >
@@ -208,13 +282,13 @@ export default function AdminOverview() {
                </span>
              )}
            </button>
-           <button 
+           <button
              className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-semibold text-foreground shadow-sm transition hover:bg-accent/80 hover:shadow"
            >
              <Banknote className="h-4 w-4" /> Start Payroll
            </button>
-           <button 
-             onClick={() => fetchAll()}
+           <button
+             onClick={() => fetchAll(true)}
              className="inline-flex items-center gap-2 rounded-xl border border-border bg-foreground px-4 py-2.5 text-sm font-semibold text-background shadow-md transition hover:bg-foreground/90 hover:shadow-lg"
            >
              <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} /> Refresh
@@ -224,39 +298,46 @@ export default function AdminOverview() {
 
       {/* ── KPI At-A-Glance Row ──────────────────────────────────────── */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-        <MetricKpi 
+        <MetricKpi
           title="Total Revenue (MTD)" value={formatCompact(stats.collected)} subtitle="vs 1.2Cr Target"
-          icon={IndianRupee} gradientClass="bg-gradient-to-br from-emerald-500 to-emerald-700" 
+          icon={IndianRupee} gradientClass="bg-gradient-to-br from-emerald-500 to-emerald-700"
           trend={{ value: 12.5, positive: true }} loading={loading}
           sparklineData={financePayrollData} sparklineKey="collected"
         />
-        <MetricKpi 
-          title="Campus Presence" value="94.2%" subtitle={`${stats.studentCount} Students & Staff Present`}
-          icon={Users} gradientClass="bg-gradient-to-br from-blue-500 to-indigo-600" 
-          trend={{ value: 2.1, positive: true }} loading={false}
-          sparklineData={attendanceData} sparklineKey="student"
+        <MetricKpi
+          title="Staff Campus Presence"
+          value={loading ? "—" : campusPresenceDisplay}
+          subtitle={campusPresenceSubtitle}
+          icon={Users} gradientClass="bg-gradient-to-br from-blue-500 to-indigo-600"
+          trend={hrmsSummary ? { value: (hrmsSummary.staffPresentPercent - 90).toFixed(1), positive: hrmsSummary.staffPresentPercent >= 90 } : undefined}
+          loading={loading}
+          sparklineData={attendanceData} sparklineKey="staff"
         />
-        <MetricKpi 
+        <MetricKpi
           title="Net Outstanding" value={formatCompact(stats.outstanding)} subtitle={`${stats.pendingInvoices} Overdue Invoices`}
-          icon={Clock} gradientClass="bg-gradient-to-br from-amber-500 to-orange-600" 
+          icon={Clock} gradientClass="bg-gradient-to-br from-amber-500 to-orange-600"
           trend={{ value: 4.8, positive: false }} loading={loading}
           sparklineData={financePayrollData} sparklineKey="payroll"
         />
-        <MetricKpi 
-          title="Pending Actions" value={unreadCount.toString()} subtitle="Unread dashboard events"
-          icon={Layers} gradientClass="bg-gradient-to-br from-rose-500 to-rose-700" 
-          loading={false}
+        <MetricKpi
+          title="Pending Actions"
+          value={pendingActionsCount.toString()}
+          subtitle={hrmsSummary
+            ? `${hrmsSummary.pendingProxyCount} Proxy · ${hrmsSummary.pendingLateClockInCount} Late Clock-In · ${hrmsSummary.pendingLeaveApplications} Leave`
+            : "Unread dashboard events"}
+          icon={Layers} gradientClass="bg-gradient-to-br from-rose-500 to-rose-700"
+          loading={loading}
         />
       </div>
 
       {/* ── Bento Grid Area ──────────────────────────────────────────── */}
       <div className="grid grid-cols-1 md:grid-cols-12 auto-rows-[minmax(180px,auto)] gap-5">
-        
+
         {/* Row 1 / Huge Chart */}
-        <BentoWidget 
-          title="Finance & Payroll Analytics" 
-          subtitle="Revenue vs Expected vs Outflow" 
-          colSpan="md:col-span-8" 
+        <BentoWidget
+          title="Finance & Payroll Analytics"
+          subtitle="Revenue vs Expected vs Outflow"
+          colSpan="md:col-span-8"
           rowSpan="md:row-span-2"
           action={
             <button className="text-xs font-semibold text-primary hover:underline flex items-center gap-1">
@@ -270,10 +351,10 @@ export default function AdminOverview() {
         </BentoWidget>
 
         {/* Top Right / Demographics */}
-        <BentoWidget 
-          title="Institute Demographics" 
-          subtitle="Population Distribution" 
-          colSpan="md:col-span-4" 
+        <BentoWidget
+          title="Institute Demographics"
+          subtitle="Population Distribution"
+          colSpan="md:col-span-4"
           rowSpan="md:row-span-1"
         >
            <div className="flex h-full items-center justify-center overflow-hidden">
@@ -281,26 +362,31 @@ export default function AdminOverview() {
            </div>
         </BentoWidget>
 
-         {/* Right Middle / Smart Alerts */}
-         <BentoWidget 
-          title="Operational Alerts" 
-          subtitle="Attention Required" 
-          colSpan="md:col-span-4" 
+        {/* Right Middle / Proxy + Pending Actions */}
+        <BentoWidget
+          title="Operational Alerts"
+          subtitle="Attention Required Now"
+          colSpan="md:col-span-4"
           rowSpan="md:row-span-1"
+          action={
+            <button className="text-xs font-semibold text-primary hover:underline flex items-center gap-1">
+              View All <ArrowRight className="h-3 w-3" />
+            </button>
+          }
         >
           <div className="h-full pt-2">
-            <SmartAlertsWidget 
-              alerts={events.filter(e => e.severity === 'critical' || e.severity === 'warning')} 
-              onDismiss={markEventAsRead} 
+            <SmartAlertsWidget
+              alerts={events.filter(e => e.severity === 'critical' || e.severity === 'warning')}
+              onDismiss={markEventAsRead}
             />
           </div>
         </BentoWidget>
 
         {/* Row 2 / Attendance */}
-        <BentoWidget 
-          title="Daily Attendance Pulse" 
-          subtitle="14-Day Trajectory (Student vs Staff)" 
-          colSpan="md:col-span-5" 
+        <BentoWidget
+          title="Daily Attendance Pulse"
+          subtitle="14-Day Trajectory (Student vs Staff)"
+          colSpan="md:col-span-5"
           rowSpan="md:row-span-2"
         >
           <div className="h-full w-full pt-4">
@@ -308,22 +394,28 @@ export default function AdminOverview() {
           </div>
         </BentoWidget>
 
-        {/* Middle / Mock Modules (Transport & Library side by side) */}
-        <BentoWidget 
-          title="Fleet Health" 
-          subtitle="Live Bus Tracking" 
-          colSpan="md:col-span-3" 
+        {/* Phase 5: Proxy Coverage Widget */}
+        <BentoWidget
+          title="HRMS Intelligence"
+          subtitle="Live Pending Actions"
+          colSpan="md:col-span-3"
           rowSpan="md:row-span-2"
+          action={
+            <button className="text-xs font-semibold text-primary hover:underline flex items-center gap-1">
+              HRMS <ArrowRight className="h-3 w-3" />
+            </button>
+          }
         >
-          <div className="flex h-full items-center justify-center">
-             <TransportRadialWidget />
+          <div className="flex h-full items-center justify-center pt-2">
+            <ProxyCoverageWidget hrms={hrmsSummary} />
           </div>
         </BentoWidget>
 
-        <BentoWidget 
-          title="Live System Feed" 
-          subtitle="Latest events across campus" 
-          colSpan="md:col-span-4" 
+        {/* Live System Feed */}
+        <BentoWidget
+          title="Live System Feed"
+          subtitle="Latest events across campus"
+          colSpan="md:col-span-4"
           rowSpan="md:row-span-3"
         >
           <div className="h-full truncate">
@@ -331,11 +423,11 @@ export default function AdminOverview() {
           </div>
         </BentoWidget>
 
-         {/* Bottom Left / Quick Actions */}
-         <BentoWidget 
-          title="Command Menu" 
-          subtitle="Frequent Actions" 
-          colSpan="md:col-span-4" 
+        {/* Bottom Left / Quick Actions */}
+        <BentoWidget
+          title="Command Menu"
+          subtitle="Frequent Actions"
+          colSpan="md:col-span-4"
           rowSpan="md:row-span-1"
         >
           <div className="grid grid-cols-2 gap-3 mt-4">
@@ -353,10 +445,10 @@ export default function AdminOverview() {
           </div>
         </BentoWidget>
 
-        <BentoWidget 
-          title="Library System" 
-          subtitle="Resource Availability" 
-          colSpan="md:col-span-4" 
+        <BentoWidget
+          title="Library System"
+          subtitle="Resource Availability"
+          colSpan="md:col-span-4"
           rowSpan="md:row-span-1"
         >
            <div className="flex h-full w-full items-center justify-center overflow-hidden">
@@ -365,14 +457,14 @@ export default function AdminOverview() {
         </BentoWidget>
 
       </div>
-      
-      <NotificationDrawer 
-        isOpen={isDrawerOpen} 
-        onClose={() => setIsDrawerOpen(false)} 
-        events={events} 
-        unreadCount={unreadCount} 
-        markAllAsRead={markAllAsRead} 
-        markEventAsRead={markEventAsRead} 
+
+      <NotificationDrawer
+        isOpen={isDrawerOpen}
+        onClose={() => setIsDrawerOpen(false)}
+        events={events}
+        unreadCount={unreadCount}
+        markAllAsRead={markAllAsRead}
+        markEventAsRead={markEventAsRead}
       />
     </motion.div>
   );

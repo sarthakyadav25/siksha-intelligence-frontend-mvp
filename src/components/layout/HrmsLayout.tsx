@@ -5,7 +5,7 @@ import {
   CalendarDays, BookOpen, CheckSquare, BarChart3, Wallet, Users, CreditCard,
   ArrowUpCircle, ShieldCheck, FolderOpen, UserPlus, LogOut, Target,
   GraduationCap, DollarSign, Receipt, Timer, FileBarChart2, Settings,
-  AlignLeft, Scale,
+  AlignLeft, Scale, AlarmClock,
 } from "lucide-react";
 
 const BASE = "/dashboard/admin/hrms";
@@ -37,6 +37,7 @@ const NAV_GROUPS: { group: string; items: NavItemDef[] }[] = [
       { label: "Daily", icon: ClipboardCheck, path: `${BASE}/attendance`, exact: true },
       { label: "Trends", icon: TrendingUp, path: `${BASE}/attendance/trends` },
       { label: "Shifts", icon: Clock, path: `${BASE}/attendance/shifts` },
+      { label: "Late Clock-In", icon: AlarmClock, path: `${BASE}/attendance/late-clockin` },
     ],
   },
   {

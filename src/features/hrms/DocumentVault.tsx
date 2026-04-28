@@ -6,7 +6,7 @@ import {
   Download,
   FileText,
   Loader2,
-  Plus,
+  
   Trash2,
   Upload,
 } from "lucide-react";
@@ -167,19 +167,25 @@ export default function DocumentVault() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Document Vault</h1>
-          <p className="text-sm text-muted-foreground">
-            Securely store and manage staff documents
-          </p>
+      {/* Hero Header */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-600 via-violet-600 to-indigo-700 p-5 text-white shadow-lg">
+        <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/10 blur-xl" />
+        <div className="relative flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/20 text-2xl shadow-inner">
+              🗄️
+            </div>
+            <div>
+              <h2 className="text-xl font-bold tracking-tight">Document Vault</h2>
+              <p className="text-sm text-white/70">Securely store and manage staff documents</p>
+            </div>
+          </div>
+          {selectedStaff && (
+            <Button onClick={() => setUploadOpen(true)} className="bg-white text-purple-700 hover:bg-white/90 font-semibold shadow-sm gap-1.5">
+              ⬆️ Upload Document
+            </Button>
+          )}
         </div>
-        {selectedStaff && (
-          <Button onClick={() => setUploadOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            Upload Document
-          </Button>
-        )}
       </div>
 
       <Card>

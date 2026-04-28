@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronLeft, ChevronRight, Printer, Plus, Edit, Trash2 } from "lucide-react";
+import { Printer, Plus, Edit, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Popover,

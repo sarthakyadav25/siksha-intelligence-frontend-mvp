@@ -40,7 +40,7 @@ const LOG_STATUS_CFG: Record<ReminderLog["status"], { icon: React.ElementType; c
 export function FeeReminderCenter() {
   const [templates, setTemplates] = useState<ReminderTemplate[]>([]);
   const [logs, setLogs] = useState<ReminderLog[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [_loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSendingBulk, setIsSendingBulk] = useState(false);
 

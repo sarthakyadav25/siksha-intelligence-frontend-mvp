@@ -1,6 +1,5 @@
 import { lazy, Suspense } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent } from "@/components/ui/card";
 import HrmsDashboard from "@/features/hrms/HrmsDashboard";
 import LeaveCalendarDesigner from "@/features/hrms/LeaveCalendarDesigner";
 import LeaveTypeConfig from "@/features/hrms/LeaveTypeConfig";
@@ -11,85 +10,122 @@ import ShiftManagement from "@/features/hrms/ShiftManagement";
 import AttendanceTrendDashboard from "@/features/hrms/AttendanceTrendDashboard";
 import {
   LayoutDashboard, CalendarDays, CheckSquare, Building2, Award,
-  ClipboardCheck, TrendingUp, Clock, Wallet, CreditCard,
+  ClipboardCheck, TrendingUp, Clock, Wallet, CreditCard, Loader2,
 } from "lucide-react";
 
-const LeaveManagement = lazy(() => import("@/features/hrms/LeaveManagement"));
-const SalaryComponents = lazy(() => import("@/features/hrms/SalaryComponents"));
+const LeaveManagement   = lazy(() => import("@/features/hrms/LeaveManagement"));
+const SalaryComponents  = lazy(() => import("@/features/hrms/SalaryComponents"));
 const SalaryTemplateBuilder = lazy(() => import("@/features/hrms/SalaryTemplateBuilder"));
-const SalaryStaffMapping = lazy(() => import("@/features/hrms/SalaryStaffMapping"));
-const PayrollProcessing = lazy(() => import("@/features/hrms/PayrollProcessing"));
-const PayslipTable = lazy(() => import("@/features/hrms/PayslipTable"));
+const SalaryStaffMapping    = lazy(() => import("@/features/hrms/SalaryStaffMapping"));
+const PayrollProcessing     = lazy(() => import("@/features/hrms/PayrollProcessing"));
+const PayslipTable          = lazy(() => import("@/features/hrms/PayslipTable"));
+
+function TabLoader() {
+  return (
+    <div className="flex items-center justify-center py-16 gap-2 text-muted-foreground">
+      <Loader2 className="h-5 w-5 animate-spin text-violet-500" />
+      <span className="text-sm">Loading module…</span>
+    </div>
+  );
+}
+
+const TABS = [
+  { value: "dashboard",      label: "Dashboard",      icon: LayoutDashboard, emoji: "📊" },
+  { value: "leaves",         label: "Leaves",         icon: CalendarDays,    emoji: "🌿" },
+  { value: "leave-workflows",label: "Approvals",      icon: CheckSquare,     emoji: "✅" },
+  { value: "designations",   label: "Designations",   icon: Building2,       emoji: "🏢" },
+  { value: "grades",         label: "Grades",         icon: Award,           emoji: "🏆" },
+  { value: "attendance",     label: "Attendance",     icon: ClipboardCheck,  emoji: "📋" },
+  { value: "trends",         label: "Trends",         icon: TrendingUp,      emoji: "📈" },
+  { value: "shifts",         label: "Shifts",         icon: Clock,           emoji: "⏰" },
+  { value: "salary-setup",   label: "Salary",         icon: Wallet,          emoji: "💰" },
+  { value: "payroll",        label: "Payroll",        icon: CreditCard,      emoji: "💳" },
+];
 
 export default function AdminHrmsPage() {
-  const tabLoadingFallback = (
-    <Card>
-      <CardContent className="py-6 text-sm text-muted-foreground">Loading module...</CardContent>
-    </Card>
-  );
-
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">HRMS</h1>
-        <p className="text-sm text-muted-foreground">
-          Human resource setup and payroll operations are available here.
-        </p>
+    <div className="space-y-0 min-h-screen">
+      {/* ── Module Header ─────────────────────────────────────────── */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-700 px-6 py-5 mb-6 shadow-lg">
+        <div className="absolute inset-0 opacity-10 pointer-events-none">
+          <div className="absolute -right-12 -top-12 h-52 w-52 rounded-full bg-white" />
+          <div className="absolute -bottom-20 left-0 h-44 w-44 rounded-full bg-white" />
+        </div>
+        <div className="relative flex items-center gap-4">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-sm text-2xl shadow-inner">
+            👩‍💼
+          </div>
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
+              Human Resources Management
+            </h1>
+            <p className="text-sm text-white/70">
+              Staff, attendance, payroll, leaves & workforce operations
+            </p>
+          </div>
+        </div>
       </div>
 
       <Tabs defaultValue="dashboard" className="w-full">
-        <TabsList className="h-auto flex flex-wrap justify-start gap-1 bg-muted/60 p-1.5 rounded-xl">
-          <TabsTrigger value="dashboard" className="gap-1.5 text-xs"><LayoutDashboard className="h-3.5 w-3.5" />Dashboard</TabsTrigger>
-          <TabsTrigger value="leaves" className="gap-1.5 text-xs"><CalendarDays className="h-3.5 w-3.5" />Leaves</TabsTrigger>
-          <TabsTrigger value="leave-workflows" className="gap-1.5 text-xs"><CheckSquare className="h-3.5 w-3.5" />Leave Approval</TabsTrigger>
-          <TabsTrigger value="designations" className="gap-1.5 text-xs"><Building2 className="h-3.5 w-3.5" />Designations</TabsTrigger>
-          <TabsTrigger value="grades" className="gap-1.5 text-xs"><Award className="h-3.5 w-3.5" />Grades</TabsTrigger>
-          <TabsTrigger value="attendance" className="gap-1.5 text-xs"><ClipboardCheck className="h-3.5 w-3.5" />Attendance</TabsTrigger>
-          <TabsTrigger value="trends" className="gap-1.5 text-xs"><TrendingUp className="h-3.5 w-3.5" />Trends</TabsTrigger>
-          <TabsTrigger value="shifts" className="gap-1.5 text-xs"><Clock className="h-3.5 w-3.5" />Shifts</TabsTrigger>
-          <TabsTrigger value="salary-setup" className="gap-1.5 text-xs"><Wallet className="h-3.5 w-3.5" />Salary</TabsTrigger>
-          <TabsTrigger value="payroll" className="gap-1.5 text-xs"><CreditCard className="h-3.5 w-3.5" />Payroll</TabsTrigger>
+        {/* ── Colorful Tab Bar ─────────────────────────────────────── */}
+        <TabsList className="h-auto flex flex-wrap justify-start gap-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-2 rounded-2xl shadow-sm mb-6">
+          {TABS.map(({ value, label, emoji }) => (
+            <TabsTrigger
+              key={value}
+              value={value}
+              className="
+                gap-1.5 text-xs font-medium rounded-xl px-3 py-2 transition-all duration-150
+                text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200
+                data-[state=active]:bg-gradient-to-br data-[state=active]:from-violet-500 data-[state=active]:to-indigo-600
+                data-[state=active]:text-white data-[state=active]:shadow-md data-[state=active]:shadow-violet-200
+                dark:data-[state=active]:shadow-violet-900/30
+              "
+            >
+              <span className="text-sm leading-none">{emoji}</span>
+              <span className="hidden sm:inline">{label}</span>
+            </TabsTrigger>
+          ))}
         </TabsList>
 
-        <TabsContent value="dashboard" className="mt-4">
+        <TabsContent value="dashboard">
           <HrmsDashboard />
         </TabsContent>
 
-        <TabsContent value="leaves" className="mt-4">
+        <TabsContent value="leaves">
           <div className="space-y-8">
             <LeaveCalendarDesigner />
             <LeaveTypeConfig />
           </div>
         </TabsContent>
 
-        <TabsContent value="leave-workflows" className="mt-4">
-          <Suspense fallback={tabLoadingFallback}>
+        <TabsContent value="leave-workflows">
+          <Suspense fallback={<TabLoader />}>
             <LeaveManagement />
           </Suspense>
         </TabsContent>
 
-        <TabsContent value="designations" className="mt-4">
+        <TabsContent value="designations">
           <DesignationManagement />
         </TabsContent>
 
-        <TabsContent value="grades" className="mt-4">
+        <TabsContent value="grades">
           <StaffGradingTab />
         </TabsContent>
 
-        <TabsContent value="attendance" className="mt-4">
+        <TabsContent value="attendance">
           <StaffAttendanceTab />
         </TabsContent>
 
-        <TabsContent value="trends" className="mt-4">
+        <TabsContent value="trends">
           <AttendanceTrendDashboard />
         </TabsContent>
 
-        <TabsContent value="shifts" className="mt-4">
+        <TabsContent value="shifts">
           <ShiftManagement />
         </TabsContent>
 
-        <TabsContent value="salary-setup" className="mt-4">
-          <Suspense fallback={tabLoadingFallback}>
+        <TabsContent value="salary-setup">
+          <Suspense fallback={<TabLoader />}>
             <div className="space-y-8">
               <SalaryComponents />
               <SalaryTemplateBuilder />
@@ -98,15 +134,11 @@ export default function AdminHrmsPage() {
           </Suspense>
         </TabsContent>
 
-        <TabsContent value="payroll" className="mt-4">
-          <Suspense fallback={tabLoadingFallback}>
+        <TabsContent value="payroll">
+          <Suspense fallback={<TabLoader />}>
             <div className="space-y-8">
               <PayrollProcessing />
-              <Card>
-                <CardContent className="py-6">
-                  <PayslipTable />
-                </CardContent>
-              </Card>
+              <PayslipTable />
             </div>
           </Suspense>
         </TabsContent>

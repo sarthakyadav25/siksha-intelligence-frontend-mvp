@@ -11,7 +11,6 @@ import {
   CircleX,
   Clock,
   Download,
-  FileDown,
   Loader2,
   MoreHorizontal,
   RefreshCw,
@@ -57,7 +56,7 @@ import { useHrmsFormatters } from "@/features/hrms/hooks/useHrmsFormatters";
 import { useAppSelector } from "@/store/hooks";
 import { hrmsService, normalizeHrmsError } from "@/services/hrms";
 import { triggerBlobDownload } from "@/services/idCard";
-import type { PayrollRunCreateDTO, PayrollRunResponseDTO, PayrollStatus } from "@/services/types/hrms";
+import type { PayrollRunCreateDTO, PayrollRunResponseDTO } from "@/services/types/hrms";
 import type { PayrollPreflightDTO } from "@/services/types/payrollPreflight";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -689,26 +688,51 @@ export default function PayrollProcessing() {
 
   return (
     <div className="space-y-5">
+      {/* Hero header */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-600 via-green-600 to-teal-700 p-5 text-white shadow-lg">
+        <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/10 blur-xl" />
+        <div className="relative flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/20 text-2xl shadow-inner">
+              💼
+            </div>
+            <div>
+              <h2 className="text-xl font-bold tracking-tight">Payroll Processing</h2>
+              <p className="text-sm text-white/70">Run, approve and disburse payroll runs for your institution</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="rounded-xl bg-white/20 px-3 py-1.5 text-sm font-medium backdrop-blur-sm">
+              📅 {periodLabel}
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Summary strip */}
       {runs.length > 0 && (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <div className="rounded-xl border bg-card px-4 py-3 shadow-sm">
-            <p className="text-xs text-muted-foreground">Total Runs</p>
+          <div className="relative overflow-hidden rounded-xl border bg-white px-4 py-3 shadow-sm">
+            <div className="h-1 absolute inset-x-0 top-0 bg-gradient-to-r from-slate-300 to-slate-400 rounded-t-xl" />
+            <p className="text-xs text-muted-foreground mt-1">Total Runs</p>
             <p className="mt-0.5 text-2xl font-bold tabular-nums">{runs.length}</p>
             <p className="text-[10px] text-muted-foreground">{stats.disbursedCount} disbursed</p>
           </div>
-          <div className={`rounded-xl border bg-card px-4 py-3 shadow-sm ${stats.pendingApproval > 0 ? "border-amber-200 bg-amber-50/40" : ""}`}>
-            <p className="text-xs text-muted-foreground">Needs Approval</p>
+          <div className={`relative overflow-hidden rounded-xl border px-4 py-3 shadow-sm ${stats.pendingApproval > 0 ? "border-amber-200 bg-amber-50/40" : "bg-white"}`}>
+            <div className="h-1 absolute inset-x-0 top-0 bg-gradient-to-r from-amber-400 to-orange-500 rounded-t-xl" />
+            <p className="text-xs text-muted-foreground mt-1">Needs Approval</p>
             <p className={`mt-0.5 text-2xl font-bold tabular-nums ${stats.pendingApproval > 0 ? "text-amber-700" : ""}`}>{stats.pendingApproval}</p>
             <p className="text-[10px] text-muted-foreground">runs awaiting approval</p>
           </div>
-          <div className={`rounded-xl border bg-card px-4 py-3 shadow-sm ${stats.pendingDisburse > 0 ? "border-blue-200 bg-blue-50/40" : ""}`}>
-            <p className="text-xs text-muted-foreground">Ready to Disburse</p>
+          <div className={`relative overflow-hidden rounded-xl border px-4 py-3 shadow-sm ${stats.pendingDisburse > 0 ? "border-blue-200 bg-blue-50/40" : "bg-white"}`}>
+            <div className="h-1 absolute inset-x-0 top-0 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-t-xl" />
+            <p className="text-xs text-muted-foreground mt-1">Ready to Disburse</p>
             <p className={`mt-0.5 text-2xl font-bold tabular-nums ${stats.pendingDisburse > 0 ? "text-blue-700" : ""}`}>{stats.pendingDisburse}</p>
             <p className="text-[10px] text-muted-foreground">approved runs</p>
           </div>
-          <div className="rounded-xl border bg-card px-4 py-3 shadow-sm">
-            <p className="text-xs text-muted-foreground">Total Disbursed</p>
+          <div className="relative overflow-hidden rounded-xl border bg-white px-4 py-3 shadow-sm">
+            <div className="h-1 absolute inset-x-0 top-0 bg-gradient-to-r from-emerald-400 to-teal-500 rounded-t-xl" />
+            <p className="text-xs text-muted-foreground mt-1">Total Disbursed</p>
             <p className="mt-0.5 text-lg font-bold tabular-nums text-emerald-700 truncate">{formatCurrency(stats.totalDisbursed)}</p>
             <p className="text-[10px] text-muted-foreground">across all runs</p>
           </div>

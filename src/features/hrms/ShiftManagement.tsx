@@ -16,7 +16,7 @@ import { getLocalDateString } from "@/lib/dateUtils";
 import type { ShiftCreateDTO, ShiftResponseDTO } from "@/services/types/shift";
 import {
   Clock,
-  Plus,
+  
   Users,
   UserPlus,
   Search,
@@ -423,22 +423,25 @@ export default function ShiftManagement() {
   return (
     <div className="space-y-6">
       {/* ── Shift Definitions ───────────────────────────────────── */}
-      <Card>
+      <Card className="overflow-hidden">
+        <div className="h-1.5 bg-gradient-to-r from-amber-400 via-orange-400 to-red-400" />
         <CardHeader className="pb-4">
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-center gap-2.5">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10">
-                <Clock className="h-4 w-4 text-primary" />
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/10">
+                <Clock className="h-4 w-4 text-amber-600" />
               </div>
               <div>
-                <CardTitle className="text-lg">Shift Definitions</CardTitle>
-                <p className="text-xs text-muted-foreground mt-0.5">Create and manage shift timings</p>
+                <CardTitle className="text-lg">⏰ Shift Definitions</CardTitle>
+                <p className="text-xs text-muted-foreground mt-0.5">Configure working hours and grace periods</p>
               </div>
             </div>
 
-            <Button className="gap-2" onClick={openCreateShiftDialog}>
-              <Plus className="h-4 w-4" />
-              Create Shift
+            <Button
+              className="gap-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white shadow-md"
+              onClick={openCreateShiftDialog}
+            >
+              ⏰ Create Shift
             </Button>
           </div>
         </CardHeader>
@@ -498,7 +501,8 @@ export default function ShiftManagement() {
       </Card>
 
       {/* ── Staff Shift Mapping ──────────────────────────────────── */}
-      <Card>
+      <Card className="overflow-hidden">
+        <div className="h-1.5 bg-gradient-to-r from-violet-400 via-purple-400 to-indigo-400" />
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">

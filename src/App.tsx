@@ -22,6 +22,7 @@ import StudentTimetablePage from './pages/dashboard/student/timetable/page'
 import StudentResultsPage from './pages/dashboard/student/results/page'
 import StudentPastPapersPage from './pages/dashboard/student/past-papers/page'
 import StudentAdmitCardsPage from './pages/dashboard/student/admit-cards/page'
+import ExamControllerLayout from './components/layout/ExamControllerLayout'
 
 const LoginPage = lazy(() => import('@/features/auth/LoginPage'))
 const ApplicantSignupPage = lazy(() => import('@/features/auth/ApplicantSignupPage'))
@@ -73,6 +74,7 @@ const BankDetailsManager = lazy(() => import('@/features/hrms/BankDetailsManager
 const StatutoryReports = lazy(() => import('@/features/hrms/StatutoryReports'))
 const StatutorySettings = lazy(() => import('@/features/hrms/StatutorySettings'))
 const Staff360ProfilePage = lazy(() => import('@/features/hrms/Staff360Profile'))
+const LateClockInReview = lazy(() => import('@/features/hrms/LateClockInReview'))
 
 const TeacherDashboardPage = lazy(() => import('@/pages/dashboard/teacher/page'))
 const TeacherProfilePage = lazy(() => import('@/pages/dashboard/teacher/profile/page'))
@@ -85,6 +87,9 @@ const TeacherLectureLogsPage = lazy(() => import('@/pages/dashboard/teacher/lect
 const TeacherDisciplinePage = lazy(() => import('@/pages/dashboard/teacher/discipline/page'))
 const TeacherEvaluationPage = lazy(() => import('@/pages/dashboard/teacher/evaluation/page'))
 const TeacherSelfAttendancePage = lazy(() => import('@/pages/dashboard/teacher/self-attendance/page'))
+
+const InvigilatorRoomsPage = lazy(() => import('@/pages/dashboard/invigilator/attendance/page'))
+const RoomAttendancePage = lazy(() => import('@/pages/dashboard/invigilator/attendance/[roomId]/page'))
 
 const StudentDashboard = lazy(() => import('@/pages/dashboard/student/page'))
 const StudentProfilePage = lazy(() => import('@/pages/dashboard/student/profile/page'))
@@ -128,6 +133,11 @@ const AdmissionFormPage = lazy(() => import('@/pages/dashboard/applicant/form/pa
 const AdmissionPaymentPage = lazy(() => import('@/pages/dashboard/applicant/payment/page'))
 const AdminAdmissionDashboard = lazy(() => import('@/pages/dashboard/admin/admission/page'))
 const AdminDisciplinePage = lazy(() => import('@/pages/dashboard/admin/discipline/page'))
+
+const ExamControllerDashboardPage = lazy(() => import('@/pages/dashboard/exam-controller/page'))
+const ExamControllerRoomPage = lazy(() => import('@/pages/dashboard/exam-controller/room/[roomId]/page'))
+const ExamControllerClassPage = lazy(() => import('@/pages/dashboard/exam-controller/class/page'))
+const ExamControllerExaminationsPage = lazy(() => import('@/pages/dashboard/exam-controller/examinations/page'))
 
 function withRouteSuspense(node: ReactNode) {
   return (
@@ -227,6 +237,8 @@ export default function App() {
             <Route path="attendance" element={withRouteSuspense(<StaffAttendanceTab />)} />
             <Route path="attendance/trends" element={withRouteSuspense(<AttendanceTrendDashboard />)} />
             <Route path="attendance/shifts" element={withRouteSuspense(<ShiftManagement />)} />
+            <Route path="attendance/late-clockin" element={withRouteSuspense(<LateClockInReview />)} />
+
             <Route path="leaves/calendar" element={withRouteSuspense(<LeaveCalendarDesigner />)} />
             <Route path="leaves/types" element={withRouteSuspense(<LeaveTypeConfig />)} />
             <Route path="leaves/templates" element={withRouteSuspense(<LeaveTemplateManager />)} />
@@ -305,6 +317,40 @@ export default function App() {
           <Route path="evaluation" element={withRouteSuspense(<TeacherEvaluationPage />)} />
           <Route path="discipline" element={withRouteSuspense(<TeacherDisciplinePage />)} />
           <Route path="*" element={<Navigate to="/dashboard/teacher" replace />} />
+        </Route>
+
+        {/* Invigilator Routes */}
+        <Route
+          path="/dashboard/invigilator"
+          element={
+            <ProtectedRoute>
+              <RoleBasedRoute allowedRoles={['SUPER_ADMIN', 'ADMIN', 'TEACHER']}>
+                <TeacherLayout />
+              </RoleBasedRoute>
+            </ProtectedRoute>
+          }
+        >
+          <Route path="attendance" element={withRouteSuspense(<InvigilatorRoomsPage />)} />
+          <Route path="attendance/:examScheduleId/:roomId" element={withRouteSuspense(<RoomAttendancePage />)} />
+          <Route path="*" element={<Navigate to="/dashboard/invigilator/attendance" replace />} />
+        </Route>
+
+        {/* Exam Controller Routes */}
+        <Route
+          path="/dashboard/exam-controller"
+          element={
+            <ProtectedRoute>
+              <RoleBasedRoute allowedRoles={['SUPER_ADMIN', 'SCHOOL_ADMIN', 'ADMIN', 'EXAM_CONTROLLER']}>
+                <ExamControllerLayout />
+              </RoleBasedRoute>
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={withRouteSuspense(<ExamControllerDashboardPage />)} />
+          <Route path="room/:roomId" element={withRouteSuspense(<ExamControllerRoomPage />)} />
+          <Route path="class" element={withRouteSuspense(<ExamControllerClassPage />)} />
+          <Route path="examinations" element={withRouteSuspense(<ExamControllerExaminationsPage />)} />
+          <Route path="*" element={<Navigate to="/dashboard/exam-controller" replace />} />
         </Route>
 
         {/* Student Dashboard - All roles (students and above) */}

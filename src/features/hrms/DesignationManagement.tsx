@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus } from "lucide-react";
+import {  UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import ConfirmDialog from "@/components/common/ConfirmDialog";
 import DataTable, { type Column } from "@/components/common/DataTable";
@@ -25,9 +25,12 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import ReviewDialog from "@/features/hrms/components/ReviewDialog";
+import DesignationStaffDialog from "@/features/hrms/components/DesignationStaffDialog";
 import { hrmsService, normalizeHrmsError } from "@/services/hrms";
 import { useAppSelector } from "@/store/hooks";
 import type {
+  SalaryTemplateResponseDTO,
+  StaffGradeResponseDTO,
   StaffCategory,
   StaffDesignationCreateUpdateDTO,
   StaffDesignationResponseDTO,
@@ -75,6 +78,7 @@ export default function DesignationManagement() {
   const [saveReviewOpen, setSaveReviewOpen] = useState(false);
   const [form, setForm] = useState<StaffDesignationCreateUpdateDTO>(initialForm);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
+  const [assignDialogDesignation, setAssignDialogDesignation] = useState<StaffDesignationResponseDTO | null>(null);
 
   const canDelete = roles
     .map((role) => role.toUpperCase().replace(/^ROLE_/, ""))
@@ -90,12 +94,12 @@ export default function DesignationManagement() {
 
   const { data: salaryTemplates } = useQuery({
     queryKey: ["hrms", "salary-templates"],
-    queryFn: () => hrmsService.listSalaryTemplates().then((res) => res.data.content),
+    queryFn: () => hrmsService.listSalaryTemplates().then((res) => res.data),
   });
 
   const { data: staffGrades } = useQuery({
     queryKey: ["hrms", "staff-grades"],
-    queryFn: () => hrmsService.listGrades().then((res) => res.data.content),
+    queryFn: () => hrmsService.listGrades().then((res) => res.data),
   });
 
   const refresh = () => queryClient.invalidateQueries({ queryKey: ["hrms", "designations"] });
@@ -150,8 +154,8 @@ export default function DesignationManagement() {
       category: row.category,
       description: row.description ?? "",
       sortOrder: row.sortOrder,
-      defaultSalaryTemplateRef: salaryTemplates?.find(t => t.templateId === row.defaultSalaryTemplateId)?.uuid,
-      defaultGradeRef: staffGrades?.find(g => g.gradeId === row.defaultGradeId)?.uuid,
+      defaultSalaryTemplateRef: salaryTemplates?.find((t: SalaryTemplateResponseDTO) => t.templateId === row.defaultSalaryTemplateId)?.uuid,
+      defaultGradeRef: staffGrades?.find((g: StaffGradeResponseDTO) => g.gradeId === row.defaultGradeId)?.uuid,
       teachingLevel: row.teachingLevel,
     });
     setFieldErrors({});
@@ -216,26 +220,40 @@ export default function DesignationManagement() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-3">
-        <h3 className="text-base font-semibold">Designation Management</h3>
-        <div className="flex items-center gap-2">
-          <Select value={categoryFilter} onValueChange={(value) => setCategoryFilter(value as "ALL" | StaffCategory)}>
-            <SelectTrigger className="w-[220px]">
-              <SelectValue placeholder="Filter category" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL">All Categories</SelectItem>
-              {CATEGORY_OPTIONS.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <Button size="sm" onClick={openCreate}>
-            <Plus className="mr-2 h-4 w-4" /> Add Designation
-          </Button>
+      {/* Hero Header */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 via-purple-600 to-violet-700 p-5 text-white shadow-lg">
+        <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/10 blur-xl" />
+        <div className="relative flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/20 text-2xl shadow-inner">
+              🏢
+            </div>
+            <div>
+              <h2 className="text-xl font-bold tracking-tight">Designation Management</h2>
+              <p className="text-sm text-white/70">Configure staff roles, categories, pay templates and grades</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Select value={categoryFilter} onValueChange={(value) => setCategoryFilter(value as "ALL" | StaffCategory)}>
+              <SelectTrigger className="w-[180px] bg-white/20 border-white/30 text-white h-9 backdrop-blur-sm">
+                <SelectValue placeholder="Filter category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">All Categories</SelectItem>
+                {CATEGORY_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button
+              onClick={openCreate}
+              className="bg-white text-indigo-700 hover:bg-white/90 font-semibold shadow-sm gap-1.5"
+            >
+              ➕ Add Designation
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -246,6 +264,17 @@ export default function DesignationManagement() {
         onEdit={openEdit}
         onDelete={(row) => setDeleteTarget(row)}
         emptyMessage={isLoading ? "Loading designations..." : "No designations found."}
+        customActions={(row) => (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 text-primary hover:text-primary hover:bg-primary/10"
+            title="Assign Staff"
+            onClick={() => setAssignDialogDesignation(row)}
+          >
+            <UserPlus className="h-3.5 w-3.5" />
+          </Button>
+        )}
       />
 
       <Dialog open={formOpen} onOpenChange={(open) => { if (!open) closeForm(); }}>
@@ -448,6 +477,12 @@ export default function DesignationManagement() {
           deleteMutation.mutate(deleteTarget.uuid);
         }}
         loading={deleteMutation.isPending}
+      />
+
+      <DesignationStaffDialog
+        open={Boolean(assignDialogDesignation)}
+        onOpenChange={(open) => { if (!open) setAssignDialogDesignation(null); }}
+        designation={assignDialogDesignation}
       />
     </div>
   );

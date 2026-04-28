@@ -5,7 +5,7 @@ import {
   IndianRupee, Search, User, FileText,
 } from "lucide-react";
 import { toast } from "sonner";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -59,7 +59,7 @@ function RefundPipeline({ status }: { status: RefundStatus }) {
 
 export function RefundManager() {
   const [refunds, setRefunds] = useState<RefundRecord[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [_loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [isDialogOpen, setIsDialogOpen] = useState(false);

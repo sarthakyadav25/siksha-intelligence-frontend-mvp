@@ -165,11 +165,18 @@ export default function PromotionManagement() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-1">
-        <h2 className="text-2xl font-bold tracking-tight">Promotions & Transfers</h2>
-        <p className="text-muted-foreground text-sm">
-          Initiate, approve, or reject staff promotions and inter-departmental transfers.
-        </p>
+      {/* Hero Header */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 via-blue-600 to-cyan-700 p-5 text-white shadow-lg">
+        <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/10 blur-xl" />
+        <div className="relative flex items-center gap-3">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/20 text-2xl shadow-inner">
+            🚀
+          </div>
+          <div>
+            <h2 className="text-xl font-bold tracking-tight">Promotions &amp; Transfers</h2>
+            <p className="text-sm text-white/70">Initiate, approve, or reject staff promotions and inter-departmental transfers</p>
+          </div>
+        </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>

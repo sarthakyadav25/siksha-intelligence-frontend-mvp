@@ -9,7 +9,7 @@ import {
   Plus,
   SkipForward,
   Trash2,
-  Users,
+  
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -44,7 +44,7 @@ import type {
   TaskRecordStatus,
 } from "@/services/types/hrms";
 import { adminService } from "@/services/admin";
-import type { Department, StaffCategory as AdminStaffCategory } from "@/services/types/admin";
+import type { Department } from "@/services/types/admin";
 import EmptyState from "@/features/hrms/components/EmptyState";
 import ReviewDialog from "@/features/hrms/components/ReviewDialog";
 import StaffSearchSelect from "@/features/hrms/components/StaffSearchSelect";
@@ -322,17 +322,26 @@ export default function OnboardingManagement() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Onboarding Management</h1>
-          <p className="text-sm text-muted-foreground">
-            Manage onboarding templates and track staff onboarding progress
-          </p>
+      {/* Hero Header */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-teal-600 via-emerald-600 to-green-700 p-5 text-white shadow-lg">
+        <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/10 blur-xl" />
+        <div className="relative flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/20 text-2xl shadow-inner">
+              🎓
+            </div>
+            <div>
+              <h2 className="text-xl font-bold tracking-tight">Onboarding Management</h2>
+              <p className="text-sm text-white/70">Manage onboarding templates and track staff onboarding progress</p>
+            </div>
+          </div>
+          <Button
+            onClick={() => setStartFormOpen(true)}
+            className="bg-white text-teal-700 hover:bg-white/90 font-semibold gap-1.5 shadow-sm"
+          >
+            👥 Start Onboarding
+          </Button>
         </div>
-        <Button onClick={() => setStartFormOpen(true)}>
-          <Users className="mr-2 h-4 w-4" />
-          Start Onboarding
-        </Button>
       </div>
 
       <Tabs defaultValue="records">

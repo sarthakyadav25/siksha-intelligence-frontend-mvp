@@ -556,18 +556,26 @@ export default function ExitManagement() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Exit Management</h1>
-          <p className="text-sm text-muted-foreground">
-            Manage staff separations, clearances, and full &amp; final settlements
-          </p>
+      {/* Hero Header */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-red-600 via-rose-600 to-pink-700 p-5 text-white shadow-lg">
+        <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/10 blur-xl" />
+        <div className="relative flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/20 text-2xl shadow-inner">
+              🚪
+            </div>
+            <div>
+              <h2 className="text-xl font-bold tracking-tight">Exit Management</h2>
+              <p className="text-sm text-white/70">Manage staff separations, clearances, and full &amp; final settlements</p>
+            </div>
+          </div>
+          <Button
+            onClick={() => { setForm(initForm()); setFormErrors({}); setCreateOpen(true); }}
+            className="bg-white text-red-700 hover:bg-white/90 font-semibold gap-1.5 shadow-sm"
+          >
+            ➕ New Exit Request
+          </Button>
         </div>
-        <Button onClick={() => { setForm(initForm()); setFormErrors({}); setCreateOpen(true); }} className="shadow-sm">
-          <Plus className="mr-2 h-4 w-4" />
-          New Exit Request
-        </Button>
       </div>
 
       {/* List */}

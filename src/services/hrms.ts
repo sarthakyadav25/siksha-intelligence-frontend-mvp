@@ -92,7 +92,6 @@ import type {
   StaffSummaryDTO,
   StaffSalaryMappingCreateDTO,
   StaffSalaryMappingResponseDTO,
-  BankAccountType,
   BankDetailsUpdateDTO,
   BankDetailsBulkImportResultDTO,
   StaffBankStatusDTO,
@@ -301,6 +300,32 @@ export const hrmsService = {
 
   deleteDesignation(identifier: string) {
     return api.delete<void>(`${HRMS}/designations/${identifier}`);
+  },
+
+  /** POST /hrms/designations/{ref}/assign-staff — bulk-assign staff to a designation (auto-provisions salary) */
+  bulkAssignStaffToDesignation(designationRef: string, payload: { staffRefs: string[] }) {
+    return api.post<{
+      designationCode: string;
+      designationName: string;
+      totalRequested: number;
+      successCount: number;
+      failureCount: number;
+      successfulEmployeeIds: string[];
+      errors: string[];
+    }>(`${HRMS}/designations/${designationRef}/assign-staff`, payload);
+  },
+
+  /** POST /hrms/designations/unassign-staff — bulk-unassign staff from their designations */
+  bulkUnassignStaffFromDesignation(payload: { staffRefs: string[] }) {
+    return api.post<{
+      designationCode: string | null;
+      designationName: string;
+      totalRequested: number;
+      successCount: number;
+      failureCount: number;
+      successfulEmployeeIds: string[];
+      errors: string[];
+    }>(`${HRMS}/designations/unassign-staff`, payload);
   },
 
   // ── Staff Grades ─────────────────────────────────────────────────
@@ -960,5 +985,27 @@ export const hrmsService = {
   /** DELETE /auth/hrms/bank-details/{staffRef}/bank — clear bank details */
   clearBankDetails(staffRef: string) {
     return api.delete<void>(`${HRMS}/bank-details/${staffRef}/bank`);
+  },
+
+  // ── Late Clock-In Review (Phase 2.2) ───────────────────────────────
+  /** GET /auth/ams/late-clockin — list with optional status filter */
+  listLateClockInRequests(params?: { status?: string; page?: number; size?: number }) {
+    return api.get<import("./types/common").PageResponse<import("./types/hrms").LateClockInRequestDTO>>(
+      `/auth/ams/late-clockin`,
+      { params }
+    );
+  },
+
+  /** GET /auth/ams/late-clockin/pending-count */
+  getLateClockInPendingCount() {
+    return api.get<{ pending: number }>(`/auth/ams/late-clockin/pending-count`);
+  },
+
+  /** PUT /auth/ams/late-clockin/{uuid}/review */
+  reviewLateClockIn(uuid: string, dto: import("./types/hrms").LateClockInReviewDTO) {
+    return api.put<import("./types/hrms").LateClockInRequestDTO>(
+      `/auth/ams/late-clockin/${uuid}/review`,
+      dto
+    );
   },
 };

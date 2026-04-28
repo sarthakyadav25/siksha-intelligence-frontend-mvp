@@ -1,6 +1,6 @@
 import { useRef, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Check, Plus } from "lucide-react";
+import { Check, } from "lucide-react";
 import { toast } from "sonner";
 import ConfirmDialog from "@/components/common/ConfirmDialog";
 import DataTable, { type Column } from "@/components/common/DataTable";
@@ -231,11 +231,26 @@ export default function LeaveTypeConfig() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-base font-semibold">Leave Types</h3>
-        <Button size="sm" onClick={openCreate}>
-          <Plus className="mr-2 h-4 w-4" /> Add Leave Type
-        </Button>
+      {/* Hero Header */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-600 via-teal-600 to-green-700 p-5 text-white shadow-lg">
+        <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/10 blur-xl" />
+        <div className="relative flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/20 text-2xl shadow-inner">
+              🌿
+            </div>
+            <div>
+              <h2 className="text-xl font-bold tracking-tight">Leave Types</h2>
+              <p className="text-sm text-white/70">Configure leave codes, quotas, carry-forward & eligibility rules</p>
+            </div>
+          </div>
+          <Button
+            onClick={openCreate}
+            className="bg-white text-emerald-700 hover:bg-white/90 font-semibold gap-1.5 shadow-sm"
+          >
+            ➕ Add Leave Type
+          </Button>
+        </div>
       </div>
 
       <DataTable

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import {
@@ -87,7 +87,7 @@ export default function ParentStudentProfilePage() {
 
   if (isLoading || !data) return <ProfileSkeleton />;
 
-  const { basicProfile, studentDetails, addresses, guardianDetails } = data;
+  const { basicProfile, studentDetails, addresses } = data;
   const fullName = [basicProfile.firstName, basicProfile.middleName, basicProfile.lastName].filter(Boolean).join(" ");
   const primaryAddress = addresses?.find((a: AddressDTO) => a.addressType === "HOME") || addresses?.[0];
   const medicalRecord = studentDetails?.medicalRecord;

@@ -21,7 +21,7 @@ export interface MasterAnalyticsResponseDTO {
 
 export interface SystemEvent {
   id: string;
-  type: 'finance' | 'attendance' | 'hrms' | 'system' | 'alert';
+  type: 'finance' | 'attendance' | 'hrms' | 'system' | 'alert' | 'proxy' | 'late-clockin';
   severity: 'info' | 'warning' | 'critical';
   title: string;
   message: string;
@@ -39,12 +39,38 @@ export interface PageResponse<T> {
   number: number;
 }
 
+/** Live HRMS dashboard summary — returned by GET /auth/hrms/dashboard/summary */
+export interface HrmsDashboardSummaryDTO {
+  totalActiveStaff: number;
+  staffWithSalaryMapping: number;
+  staffWithoutSalaryMapping: number;
+  totalPayrollThisMonth: number;
+  totalPayrollLastMonth: number;
+  pendingLeaveApplications: number;
+  todayPresent: number;
+  todayAbsent: number;
+  todayOnLeave: number;
+  totalTeachingStaff: number;
+  totalNonTeachingAdmin: number;
+  totalNonTeachingSupport: number;
+  pendingApprovalRequests: number;
+  // Phase 5 — Dashboard Intelligence
+  pendingProxyCount: number;
+  pendingLateClockInCount: number;
+  staffPresentPercent: number;
+}
+
 export const dashboardService = {
   /** GET /auth/dashboard/master-analytics */
   getMasterAnalytics() {
     return api.get<MasterAnalyticsResponseDTO>("/auth/dashboard/master-analytics");
   },
-  
+
+  /** GET /auth/hrms/dashboard/summary — real-time HRMS KPIs for the admin overview */
+  getHrmsSummary() {
+    return api.get<HrmsDashboardSummaryDTO>("/auth/hrms/dashboard/summary");
+  },
+
   /** GET /auth/dashboard/events */
   getEvents(params?: { page?: number; size?: number; since?: string; type?: string }) {
     return api.get<PageResponse<SystemEvent>>("/auth/dashboard/events", { params });

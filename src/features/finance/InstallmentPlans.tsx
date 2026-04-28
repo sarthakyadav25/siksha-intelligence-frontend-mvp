@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  CalendarRange, Plus, CheckCircle2, Clock, AlertTriangle, Search,
-  IndianRupee, Users, Layers, ChevronDown, ChevronRight,
+  Plus, CheckCircle2, Clock, AlertTriangle, Search, Users,
+  Layers, ChevronDown, ChevronRight,
 } from "lucide-react";
 import { toast } from "sonner";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -54,7 +54,7 @@ function EMITimeline({ totalAmount, plan }: { totalAmount: number; plan: Install
 export function InstallmentPlans() {
   const [plans, setPlans] = useState<InstallmentPlan[]>([]);
   const [assignments, setAssignments] = useState<InstallmentAssignment[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [_loading, setLoading] = useState(true);
   const [expandedPlan, setExpandedPlan] = useState<number | null>(null);
   const [search, setSearch] = useState("");
   const [isPlanDialogOpen, setIsPlanDialogOpen] = useState(false);

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Clock, Loader2, Plus } from "lucide-react";
+import { Clock, Loader2, } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,6 +20,7 @@ const STATUS_COLORS: Record<OvertimeStatus, string> = {
   APPROVED: "bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-300",
   REJECTED: "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300",
   INCLUDED_IN_PAYROLL: "bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300",
+  PAID: "bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-300",
 };
 
 export default function TeacherMyOvertime() {
@@ -62,11 +63,26 @@ export default function TeacherMyOvertime() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-end">
-        <Button onClick={() => setOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Overtime
-        </Button>
+      {/* Hero Header */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-amber-500 via-orange-600 to-red-600 p-5 text-white shadow-lg">
+        <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/10 blur-xl" />
+        <div className="relative flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/20 text-2xl shadow-inner">
+              ⏱️
+            </div>
+            <div>
+              <h2 className="text-xl font-bold tracking-tight">My Overtime</h2>
+              <p className="text-sm text-white/70">Submit and track overtime hours for approval</p>
+            </div>
+          </div>
+          <Button
+            onClick={() => setOpen(true)}
+            className="bg-white text-amber-700 hover:bg-white/90 font-semibold gap-1.5 shadow-sm"
+          >
+            ➕ Add Overtime
+          </Button>
+        </div>
       </div>
 
       {isLoading ? (
@@ -87,7 +103,7 @@ export default function TeacherMyOvertime() {
                 </div>
               </CardHeader>
               <CardContent className="pt-0 pb-3">
-                {record.compensationType === "CASH" && (record.status === "APPROVED" || record.status === "CONVERTED" || record.status === "INCLUDED_IN_PAYROLL") && (
+                {record.compensationType === "CASH" && (record.status === "APPROVED" || record.status === "INCLUDED_IN_PAYROLL" || record.status === "PAID") && (
                   <p className="text-xs font-semibold text-primary mb-1">
                     Payout: {record.approvedAmount ? formatCurrency(record.approvedAmount) : "Pending"} <span className="text-muted-foreground font-normal">(Rate: {record.multiplier}x)</span>
                   </p>

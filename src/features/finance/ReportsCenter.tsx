@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { format } from "date-fns";
 import {
   BarChart3, Download, Filter, FileSpreadsheet, TrendingUp, TrendingDown,
-  Clock, AlertTriangle, CheckCircle2, X, FileText, CreditCard, Calendar,
+  Clock, AlertTriangle, CheckCircle2, X, FileText, CreditCard,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -16,7 +16,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { formatINR, formatINRCompact, groupByMonth } from "../finance/utils/financeUtils";
 
 interface ReportsCenterProps {

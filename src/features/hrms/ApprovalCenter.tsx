@@ -209,19 +209,37 @@ export default function ApprovalCenter() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Approval Center</h1>
-          <p className="text-sm text-muted-foreground">
-            Review and act on pending approval requests
-          </p>
+      {/* Hero Header */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-700 via-sky-700 to-teal-700 p-5 text-white shadow-lg">
+        <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/10 blur-xl" />
+        <div className="relative flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/20 text-2xl shadow-inner">
+              ✅
+            </div>
+            <div>
+              <h2 className="text-xl font-bold tracking-tight">Approval Center</h2>
+              <p className="text-sm text-white/70">Review and act on pending approval requests</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            {myPending.length > 0 && (
+              <div className="flex items-center gap-2 bg-amber-400/20 border border-amber-300/30 rounded-xl px-3 py-1.5 text-amber-200 text-sm font-semibold">
+                🔔 {myPending.length} pending
+              </div>
+            )}
+            <Button
+              variant="outline"
+              className="bg-white/20 border-white/30 text-white hover:bg-white/30 backdrop-blur-sm gap-1.5"
+              asChild
+            >
+              <Link to="/dashboard/admin/hrms/approvals/config">
+                <Settings className="h-4 w-4" />
+                <span className="hidden sm:inline">Configure Chains</span>
+              </Link>
+            </Button>
+          </div>
         </div>
-        <Button variant="outline" asChild>
-          <Link to="/dashboard/admin/hrms/approvals/config">
-            <Settings className="mr-2 h-4 w-4" />
-            Configure Chains
-          </Link>
-        </Button>
       </div>
 
       <Tabs defaultValue="mine">

@@ -7,7 +7,7 @@ import {
   GraduationCap,
   Loader2,
   Pencil,
-  Plus,
+  
   Trash2,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -178,22 +178,27 @@ export default function TrainingCatalog() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Training Catalog</h1>
-          <p className="text-sm text-muted-foreground">
-            Manage courses and track staff training progress
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setEnrollOpen(true)}>
-            <GraduationCap className="mr-2 h-4 w-4" />
-            Enroll Staff
-          </Button>
-          <Button onClick={openCreate}>
-            <Plus className="mr-2 h-4 w-4" />
-            New Course
-          </Button>
+      {/* Hero Header */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-700 p-5 text-white shadow-lg">
+        <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/10 blur-xl" />
+        <div className="relative flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/20 text-2xl shadow-inner">
+              📚
+            </div>
+            <div>
+              <h2 className="text-xl font-bold tracking-tight">Training Catalog</h2>
+              <p className="text-sm text-white/70">Manage courses and track staff training progress</p>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setEnrollOpen(true)} className="bg-white/20 border-white/30 text-white hover:bg-white/30">
+              🎓 Enroll Staff
+            </Button>
+            <Button onClick={openCreate} className="bg-white text-indigo-700 hover:bg-white/90 font-semibold shadow-sm">
+              ➕ New Course
+            </Button>
+          </div>
         </div>
       </div>
 

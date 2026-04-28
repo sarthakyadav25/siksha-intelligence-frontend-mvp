@@ -1,5 +1,6 @@
 import { useState, useMemo, useRef, useCallback } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import {
   Building2,
   CheckCircle2,
@@ -33,15 +34,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { useHrmsFormatters } from "@/features/hrms/hooks/useHrmsFormatters";
 import { hrmsService, normalizeHrmsError } from "@/services/hrms";
 import type { StaffBankStatusDTO, BankDetailsUpdateDTO, BankDetailsBulkImportResultDTO } from "@/services/types/hrms";
 import { parseExcelFile } from "@/features/bulk-upload/utils/parseExcel";
@@ -824,28 +817,36 @@ export default function BankDetailsManager() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-2">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight text-foreground">Bank Details</h2>
-          <p className="text-muted-foreground mt-0.5">Manage staff bank accounts for salary disbursement</p>
-        </div>
-        <div className="flex items-center gap-3">
-          {missingCount > 0 && (
-            <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-1.5 text-amber-700 text-sm font-medium">
-              <AlertTriangle className="h-4 w-4" />
-              <span>{missingCount} staff missing details</span>
+      {/* Hero Header */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-violet-600 via-indigo-600 to-blue-700 p-5 text-white shadow-lg">
+        <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/10 blur-xl" />
+        <div className="relative flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/20 text-2xl shadow-inner">
+              💳
             </div>
-          )}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => refetch()}
-            className="hidden sm:flex"
-          >
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Refresh
-          </Button>
+            <div>
+              <h2 className="text-xl font-bold tracking-tight">Bank Details</h2>
+              <p className="text-sm text-white/70">Manage staff bank accounts for salary disbursement</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            {missingCount > 0 && (
+              <div className="flex items-center gap-2 bg-white/20 border border-white/30 rounded-xl px-3 py-1.5 text-white text-sm font-medium backdrop-blur-sm">
+                <AlertTriangle className="h-4 w-4 text-amber-300" />
+                <span>{missingCount} missing</span>
+              </div>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => refetch()}
+              className="bg-white/20 border-white/30 text-white hover:bg-white/30 backdrop-blur-sm gap-1.5"
+            >
+              <RefreshCw className="h-4 w-4" />
+              <span className="hidden sm:inline">Refresh</span>
+            </Button>
+          </div>
         </div>
       </div>
 

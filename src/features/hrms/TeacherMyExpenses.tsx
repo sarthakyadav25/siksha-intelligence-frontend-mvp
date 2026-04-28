@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Loader2, Paperclip, Plus, Receipt, X } from "lucide-react";
+import { Loader2, Paperclip,  Receipt, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -93,11 +93,26 @@ export default function TeacherMyExpenses() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-end">
-        <Button onClick={() => setOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          New Expense Claim
-        </Button>
+      {/* Hero Header */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-700 p-5 text-white shadow-lg">
+        <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/10 blur-xl" />
+        <div className="relative flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/20 text-2xl shadow-inner">
+              🧭
+            </div>
+            <div>
+              <h2 className="text-xl font-bold tracking-tight">My Expense Claims</h2>
+              <p className="text-sm text-white/70">Submit and track expense reimbursements</p>
+            </div>
+          </div>
+          <Button
+            onClick={() => setOpen(true)}
+            className="bg-white text-emerald-700 hover:bg-white/90 font-semibold gap-1.5 shadow-sm"
+          >
+            ➕ New Expense Claim
+          </Button>
+        </div>
       </div>
 
       {isLoading ? (

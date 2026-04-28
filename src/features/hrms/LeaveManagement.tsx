@@ -14,7 +14,6 @@ import {
   XCircle,
 } from "lucide-react";
 import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -60,7 +59,7 @@ const initialApplyForm: LeaveApplicationCreateDTO = {
 
 type LeaveAction = "approve" | "reject" | "cancel";
 
-const STATUS_OPTIONS: Array<"ALL" | LeaveStatus> = ["ALL", "PENDING", "APPROVED", "REJECTED", "CANCELLED"];
+
 const CATEGORY_OPTIONS: Array<{ value: "ALL" | StaffCategory; label: string }> = [
   { value: "ALL", label: "All Categories" },
   { value: "TEACHING", label: "Teaching" },
@@ -200,38 +199,38 @@ export default function LeaveManagement() {
 
   return (
     <div className="space-y-6">
-      {/* ── Header ── */}
-      <div className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-violet-50 via-background to-blue-50 p-6 shadow-sm">
-        <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-violet-100/50 blur-2xl" />
-        <div className="absolute -bottom-4 -left-4 h-20 w-20 rounded-full bg-blue-100/50 blur-xl" />
+      {/* Hero Header */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-violet-600 via-purple-600 to-blue-700 p-5 text-white shadow-lg">
+        <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/10 blur-xl" />
+        <div className="absolute -bottom-4 -left-4 h-20 w-20 rounded-full bg-blue-500/20 blur-xl" />
         <div className="relative flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-violet-500 to-blue-600 flex items-center justify-center shadow-sm">
-                <FileText className="h-4 w-4 text-white" />
-              </div>
-              <h2 className="text-2xl font-bold tracking-tight">Leave Management</h2>
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/20 text-2xl shadow-inner">
+              📅
             </div>
-            <p className="text-sm text-muted-foreground">Review, approve or reject staff leave requests</p>
+            <div>
+              <h2 className="text-xl font-bold tracking-tight">Leave Management</h2>
+              <p className="text-sm text-white/70">Review, approve or reject staff leave requests</p>
+            </div>
           </div>
           <Button
             onClick={() => { setApplyForm(initialApplyForm); setFieldErrors({}); setApplyOpen(true); }}
-            className="bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-700 hover:to-blue-700 text-white shadow-md"
+            className="bg-white text-violet-700 hover:bg-white/90 font-semibold gap-1.5 shadow-sm"
           >
-            <Plus className="mr-2 h-4 w-4" /> Apply Leave
+            ➕ Apply Leave
           </Button>
         </div>
 
         {/* KPI strip */}
         <div className="relative grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5">
           {[
-            { label: "Total Requests", value: stats.total, color: "text-foreground", bg: "bg-white/80", border: "border-border" },
-            { label: "Pending",        value: stats.pending,  color: "text-amber-700",   bg: "bg-amber-50/80",   border: "border-amber-200" },
-            { label: "Approved",       value: stats.approved, color: "text-emerald-700", bg: "bg-emerald-50/80", border: "border-emerald-200" },
-            { label: "Rejected",       value: stats.rejected, color: "text-red-700",     bg: "bg-red-50/80",     border: "border-red-200" },
+            { label: "Total Requests", value: stats.total,    color: "text-white",        bg: "bg-white/10",  border: "border-white/20" },
+            { label: "Pending",        value: stats.pending,  color: "text-amber-200",   bg: "bg-amber-400/20",   border: "border-amber-300/30" },
+            { label: "Approved",       value: stats.approved, color: "text-emerald-200", bg: "bg-emerald-400/20", border: "border-emerald-300/30" },
+            { label: "Rejected",       value: stats.rejected, color: "text-rose-200",    bg: "bg-rose-400/20",     border: "border-rose-300/30" },
           ].map(({ label, value, color, bg, border }) => (
-            <div key={label} className={cn("rounded-xl border p-3 backdrop-blur-sm shadow-sm", bg, border)}>
-              <p className="text-xs text-muted-foreground font-medium">{label}</p>
+            <div key={label} className={cn("rounded-xl border p-3 backdrop-blur-sm", bg, border)}>
+              <p className="text-xs text-white/70 font-medium">{label}</p>
               <p className={cn("text-2xl font-bold mt-0.5", color)}>{value}</p>
             </div>
           ))}

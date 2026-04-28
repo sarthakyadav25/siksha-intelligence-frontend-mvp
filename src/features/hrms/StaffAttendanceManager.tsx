@@ -183,17 +183,26 @@ export default function StaffAttendanceManager() {
 
   return (
     <div className="space-y-5">
-      {/* Header + filters */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-            <CalendarDays className="h-5 w-5 text-primary" />
+      {/* Hero Header */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-700 p-5 text-white shadow-lg">
+        <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/10 blur-xl" />
+        <div className="absolute -bottom-8 -left-8 h-28 w-28 rounded-full bg-white/10 blur-xl" />
+        <div className="relative flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/20 text-2xl shadow-inner">
+              📋
+            </div>
+            <div>
+              <h2 className="text-xl font-bold tracking-tight">Staff Attendance</h2>
+              <p className="text-sm text-white/70">
+                {stats.total} marked • {stats.unmarked} unmarked • {attendanceRate}% rate
+              </p>
+            </div>
           </div>
-          <div>
-            <h2 className="text-xl font-bold tracking-tight">Staff Attendance</h2>
-            <p className="text-sm text-muted-foreground">
-              {stats.total} marked • {stats.unmarked} unmarked
-            </p>
+          <div className="flex items-center gap-2">
+            <div className="rounded-xl bg-white/20 px-3 py-1.5 text-sm font-medium backdrop-blur-sm">
+              📅 {selectedDate}
+            </div>
           </div>
         </div>
       </div>

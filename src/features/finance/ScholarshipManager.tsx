@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
-  GraduationCap, Plus, Search, Edit2, Trash2, CheckCircle2,
-  XCircle, Clock, IndianRupee, Users, Award, Percent, ToggleLeft, ToggleRight,
-} from "lucide-react";
+  GraduationCap, Plus, Search, CheckCircle2,
+  XCircle, Clock, IndianRupee, Users, Award, Percent,} from "lucide-react";
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -44,7 +43,7 @@ function SummaryCard({ icon: Icon, iconBg, iconColor, label, value }: {
 export function ScholarshipManager() {
   const [types, setTypes] = useState<ScholarshipType[]>([]);
   const [assignments, setAssignments] = useState<ScholarshipAssignment[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [_loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [isTypeDialogOpen, setIsTypeDialogOpen] = useState(false);

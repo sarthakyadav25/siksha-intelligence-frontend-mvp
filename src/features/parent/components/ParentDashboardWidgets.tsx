@@ -1,4 +1,3 @@
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { UserAvatar } from "@/components/shared/UserAvatar";
 import { ArrowRight, Calendar, CheckCircle2, ChevronRight, AlertCircle, FileText, Bell, Briefcase } from "lucide-react";

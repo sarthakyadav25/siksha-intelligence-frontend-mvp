@@ -64,15 +64,6 @@ type AttendanceRow = {
   takenBy?: { fullName?: string; firstName?: string; lastName?: string; name?: string };
 };
 
-type ClassScopedStudent = {
-  uuid: string;
-  studentId: number;
-  firstName: string;
-  middleName?: string;
-  lastName: string;
-  className?: string;
-  sectionName?: string;
-};
 
 const pickFirstString = (...values: Array<unknown>) => {
   for (const value of values) {
@@ -97,8 +88,6 @@ const resolveMarkedByName = (row: AttendanceRow) =>
 
 const resolveNotes = (row: AttendanceRow) => pickFirstString(row.notes, row.note, row.remarks);
 
-const toFullName = (firstName?: string, middleName?: string, lastName?: string) =>
-  [firstName, middleName, lastName].filter((p) => typeof p === "string" && p.trim().length > 0).join(" ").trim();
 
 export default function StudentAttendanceReview() {
   const today = getLocalDateString();

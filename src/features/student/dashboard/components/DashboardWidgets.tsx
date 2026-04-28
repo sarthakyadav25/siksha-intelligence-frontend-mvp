@@ -330,7 +330,7 @@ export function PerformanceChartWidget({ trends }: { trends?: PerformanceTrendDT
   }));
 
   const minScore = Math.floor(Math.min(...trends.map(t => t.score)) - 1);
-  const maxScore = Math.ceil(Math.max(...trends.map(t => t.score)) + 1);
+
 
   return (
     <Card className="shadow-xl bg-card/40 backdrop-blur-xl border-border/50 h-full overflow-hidden flex flex-col">

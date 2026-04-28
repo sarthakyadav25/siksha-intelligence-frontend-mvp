@@ -8,7 +8,7 @@ export type HalfDayType = "FIRST_HALF" | "SECOND_HALF";
 export type TeachingWing = "PRIMARY" | "SECONDARY" | "SENIOR_SECONDARY" | "HIGHER_SECONDARY";
 export type SalaryComponentType = "EARNING" | "DEDUCTION";
 export type CalculationMethod = "FIXED" | "PERCENTAGE_OF_BASIC" | "PERCENTAGE_OF_GROSS";
-export type PayrollStatus = "PROCESSED" | "APPROVED" | "DISBURSED";
+export type PayrollStatus = "DRAFT" | "PROCESSING" | "PROCESSED" | "APPROVED" | "DISBURSED" | "FAILED" | "VOIDED";
 
 // ── Error handling ───────────────────────────────────────────────────
 export interface HrmsFieldErrorMap {
@@ -488,7 +488,10 @@ export interface HrmsDashboardSummaryDTO {
   payrollTrend: { month: string; amount: number }[];
   categoryAttendance: CategoryAttendanceItem[];
   pendingApprovalRequests: number;
-  currentMonthHeatmap: Record<string, number>;
+  // Phase 5 — Dashboard Intelligence (heatmap now via dedicated endpoint)
+  pendingProxyCount: number;
+  pendingLateClockInCount: number;
+  staffPresentPercent: number;
 }
 
 export interface CategoryAttendanceItem {
@@ -595,19 +598,26 @@ export interface LeaveTemplateResponseDTO {
   templateName: string;
   academicYear: string;
   description?: string;
+  applicableCategory?: StaffCategory;
   active: boolean;
   items: LeaveTemplateItemDTO[];
   createdAt: string;
   updatedAt: string;
 }
 
-// ── Phase 1 — Dashboard additions ────────────────────────────────────
-// NOTE: pendingApprovalRequests + currentMonthHeatmap added to HrmsDashboardSummaryDTO below
+// ── Dashboard heatmap (dedicated lazy-loaded endpoint) ───────────────
+
+export interface AttendanceHeatmapDayEntry {
+  date: string;           // ISO "YYYY-MM-DD"
+  presentCount: number;
+  absentCount: number;
+  onLeaveCount: number;
+}
 
 export interface AttendanceHeatmapDTO {
   year: number;
-  month?: number;
-  data: Record<string, number>;
+  month: number;
+  days: AttendanceHeatmapDayEntry[];
 }
 
 /** Unified loan lifecycle states */
@@ -1315,4 +1325,27 @@ export interface BankDetailsBulkImportResultDTO {
   skippedCount: number;
   errorCount: number;
   errors: { rowNumber: number; employeeId: string; reason: string }[];
+}
+
+// ── Late Clock-In Review (Phase 2.2) ─────────────────────────────────
+export type LateClockInStatus = "PENDING" | "APPROVED" | "REJECTED";
+
+export interface LateClockInRequestDTO {
+  uuid: string;
+  staffId: number;
+  staffName: string;
+  employeeId: string;
+  designation?: string;
+  attendanceDate: string;
+  clockInTime?: string;
+  minutesLate: number;
+  reason?: string;
+  status: LateClockInStatus;
+  adminRemarks?: string;
+  createdAt: string;
+}
+
+export interface LateClockInReviewDTO {
+  action: "APPROVE" | "REJECT";
+  remarks?: string;
 }

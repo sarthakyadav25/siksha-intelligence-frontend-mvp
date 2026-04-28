@@ -69,7 +69,6 @@ import {
 import { useGetAllExams, useGetSchedulesByExam } from "../hooks/useExaminationQueries";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/axios";
-import { seatAllocationService } from "@/services/seatAllocation";
 import type { ExamResponseDTO } from "@/services/types/examination";
 import type { SeatAllocationResponseDTO } from "@/services/types/seatAllocation";
 import { toast } from "sonner";
@@ -243,58 +242,6 @@ export default function SeatingPlanPanel() {
 
   // ── Seating Layout Engine ───────────────────────────────────────
   const currentMaxPerSeat = selectedSchedule?.maxStudentsPerSeat || 1;
-
-  const layoutRoomsData = useMemo(() => {
-    const roomGroups: Record<string, SeatAllocationResponseDTO[]> = {};
-    allocations.forEach((a) => {
-      if (!roomGroups[a.roomName]) roomGroups[a.roomName] = [];
-      roomGroups[a.roomName].push(a);
-    });
-
-    return Object.entries(roomGroups).map(([roomName, allocs]) => {
-      const roomInfo = availableRooms.find((r) => r.roomName === roomName);
-      const floorNumber = roomInfo?.floorNumber ?? null;
-      const maxRow = allocs.length > 0 ? Math.max(...allocs.map((a) => a.rowNumber)) : 0;
-      const maxCol = allocs.length > 0 ? Math.max(...allocs.map((a) => a.columnNumber)) : 0;
-
-      const rows = [];
-      for (let r = 1; r <= maxRow; r++) {
-        const benches = [];
-        for (let c = 1; c <= maxCol; c++) {
-          const benchAllocs = allocs.filter(a => a.rowNumber === r && a.columnNumber === c);
-          const positions = { L: '-', M: '-', R: '-' };
-
-          benchAllocs.forEach(a => {
-            const subjectAbbr = a.subjectName ? a.subjectName.substring(0, 3).toUpperCase() : "";
-            const suffix = subjectAbbr ? ` (${subjectAbbr})` : "";
-            const displayValue = a.rollNo != null ? `${a.rollNo}${suffix}` : '-';
-            if (a.positionIndex === 0) positions.L = displayValue;
-            else if (a.positionIndex === 1) positions.M = displayValue;
-            else if (a.positionIndex === 2) positions.R = displayValue;
-          });
-
-          benches.push({
-            benchLabel: `B${c}`,
-            positions
-          });
-        }
-        rows.push({
-          rowNumber: r,
-          label: `R${r}`,
-          benches
-        });
-      }
-
-      return {
-        roomName,
-        floorNumber,
-        totalStudents: allocs.length,
-        availableSeats: Math.max(0, (roomInfo?.totalSeats ?? 0) - allocs.length),
-        capacity: roomInfo?.totalSeats ?? 0,
-        rows
-      };
-    }).sort((a, b) => a.roomName.localeCompare(b.roomName));
-  }, [allocations, availableRooms]);
 
   // ── Seat Check Table Grid Data ──────────────────────────────────
   const tableRoomGrids = useMemo(() => {
@@ -539,11 +486,7 @@ export default function SeatingPlanPanel() {
   }, [selectedScheduleId]);
 
   // ── Format label for print grid ─────────────────────────────────
-  const formatLabel = () => {
-    if (currentMaxPerSeat === 1) return "Single seating per bench";
-    const labels = Array.from({ length: currentMaxPerSeat }, (_, i) => POSITION_FULL_LABELS[i] || `POS_${i}`);
-    return `Format: [ ${labels.join(" | ")} ] sharing per bench`;
-  };
+
 
   return (
     <div className="space-y-5 relative overflow-hidden" id="printable-seating-plan">

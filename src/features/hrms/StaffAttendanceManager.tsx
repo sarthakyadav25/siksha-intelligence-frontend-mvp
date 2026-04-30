@@ -184,7 +184,7 @@ export default function StaffAttendanceManager() {
   return (
     <div className="space-y-5">
       {/* Hero Header */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-700 p-5 text-white shadow-lg">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-700 p-5 text-white shadow-lg">
         <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/10 blur-xl" />
         <div className="absolute -bottom-8 -left-8 h-28 w-28 rounded-full bg-white/10 blur-xl" />
         <div className="relative flex flex-wrap items-center justify-between gap-4">

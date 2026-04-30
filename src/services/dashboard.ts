@@ -60,6 +60,31 @@ export interface HrmsDashboardSummaryDTO {
   staffPresentPercent: number;
 }
 
+export interface DashboardKpiTrendsDTO {
+  revenueMtd: number;
+  revenuePriorMtd: number;
+  revenueDeltaPct: number;
+  outstandingMtd: number;
+  outstandingPriorMtd: number;
+  outstandingDeltaPct: number;
+  payrollMtd: number;
+  payrollPriorMtd: number;
+  payrollDeltaPct: number;
+  pendingInvoiceCount: number;
+}
+
+export interface DashboardForecastDTO {
+  revenueEomForecast: number;
+  revenueMonthTarget: number;
+  revenueTrajectoryPct: number;
+  revenueTrajectory: "ON_TRACK" | "AT_RISK" | "CRITICAL";
+  attendanceTrend: "IMPROVING" | "STABLE" | "DECLINING";
+  attendanceTrendSlope: number;
+  currentStaffAttendancePct: number;
+  outstandingRisk: "LOW" | "MEDIUM" | "HIGH";
+  outstandingGrowthRate: number;
+}
+
 export const dashboardService = {
   /** GET /auth/dashboard/master-analytics */
   getMasterAnalytics() {
@@ -69,6 +94,16 @@ export const dashboardService = {
   /** GET /auth/hrms/dashboard/summary — real-time HRMS KPIs for the admin overview */
   getHrmsSummary() {
     return api.get<HrmsDashboardSummaryDTO>("/auth/hrms/dashboard/summary");
+  },
+
+  /** GET /auth/dashboard/kpi-trends — precise MTD vs prior-MTD deltas */
+  getKpiTrends() {
+    return api.get<DashboardKpiTrendsDTO>("/auth/dashboard/kpi-trends");
+  },
+
+  /** GET /auth/dashboard/forecast — predictive intelligence signals */
+  getForecast() {
+    return api.get<DashboardForecastDTO>("/auth/dashboard/forecast");
   },
 
   /** GET /auth/dashboard/events */

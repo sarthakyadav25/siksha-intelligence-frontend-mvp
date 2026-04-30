@@ -21,6 +21,8 @@ export interface AxiosAuthHandlers {
   setAccessToken: (token: string) => void
   /** Clear auth state and send the user to the login page. */
   logoutAndRedirect: () => void
+  /** Navigate to the 403 access denied page. */
+  navigateTo403?: () => void
 }
 
 let authHandlers: AxiosAuthHandlers | null = null
@@ -241,6 +243,13 @@ api.interceptors.response.use(
   async (error: AxiosError) => {
     const status = error.response?.status
     const originalConfig = error.config as (InternalAxiosRequestConfig & { _retry?: boolean }) | undefined
+
+    // Handle 403 Forbidden - user is authenticated but not authorized
+    if (status === 403) {
+      // Navigate to 403 page - page uses navigate(-1) to go back safely
+      authHandlers?.navigateTo403?.()
+      return Promise.reject(error)
+    }
 
     if (!originalConfig || status !== 401) {
       return Promise.reject(error)

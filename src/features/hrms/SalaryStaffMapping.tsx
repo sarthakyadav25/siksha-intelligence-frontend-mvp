@@ -641,7 +641,7 @@ export default function SalaryStaffMapping() {
   return (
     <div className="space-y-6">
       {/* Hero Header */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-rose-500 via-pink-600 to-fuchsia-700 p-5 text-white shadow-lg">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-700 p-5 text-white shadow-lg">
         <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/10 blur-xl" />
         <div className="relative flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -835,7 +835,7 @@ export default function SalaryStaffMapping() {
 
         {/* Bulk Assign Tab */}
         <TabsContent value="bulk" className="m-0 mt-4">
-          <Card className="max-w-2xl">
+          <Card className="max-w-2xl mx-auto">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Users className="h-4 w-4" />

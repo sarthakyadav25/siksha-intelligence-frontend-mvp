@@ -172,7 +172,7 @@ export default function HrmsDashboard() {
   return (
     <div className="space-y-6 pb-8">
       {/* ── Hero Header ─────────────────────────────────────────────── */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 via-violet-600 to-purple-700 p-6 text-white shadow-xl">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-700 p-6 text-white shadow-xl">
         <div className="absolute inset-0 opacity-10">
           <div className="absolute -right-10 -top-10 h-48 w-48 rounded-full bg-white" />
           <div className="absolute -bottom-16 -left-8 h-56 w-56 rounded-full bg-white" />

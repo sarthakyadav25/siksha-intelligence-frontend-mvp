@@ -152,7 +152,7 @@ export default function TeacherMyAttendance({ staffUuid }: { staffUuid?: string 
   return (
     <div className="space-y-6">
       {/* Hero Header — month navigator + stats */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-teal-600 via-cyan-600 to-sky-700 p-5 text-white shadow-lg">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-700 p-5 text-white shadow-lg">
         <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/10 blur-xl" />
         <div className="relative">
           {/* Month nav row */}

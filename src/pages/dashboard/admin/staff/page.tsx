@@ -186,8 +186,8 @@ export default function StaffPage() {
           sortDir: "asc",
         });
         setStaff(res.data.content);
-        setTotalElements(res.data.totalElements);
-        setTotalPages(res.data.totalPages);
+        setTotalElements(res.data.totalElements ?? 0);
+        setTotalPages(res.data.totalPages ?? 0);
       } catch {
         toast.error("Failed to load staff");
       } finally {

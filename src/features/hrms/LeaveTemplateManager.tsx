@@ -259,50 +259,52 @@ export default function LeaveTemplateManager() {
     leaveTypeColors[code] ?? { bg: "bg-muted", text: "text-muted-foreground", border: "border-border" };
 
   return (
-    <div className="space-y-6">
-      {/* ── Premium Header ── */}
-      <div className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-emerald-50 via-background to-teal-50 p-6 shadow-sm">
-        <div className="absolute -right-10 -top-10 h-36 w-36 rounded-full bg-emerald-100/50 blur-2xl" />
-        <div className="absolute -bottom-4 -left-6 h-24 w-24 rounded-full bg-teal-100/50 blur-xl" />
-        <div className="relative flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-sm">
-                <LayoutTemplate className="h-4 w-4 text-white" />
-              </div>
-              <h2 className="text-2xl font-bold tracking-tight">Leave Templates</h2>
-            </div>
-            <p className="text-sm text-muted-foreground">
+  <div className="space-y-6">
+    {/* ── Premium Header ── */}
+    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-700 px-5 py-5 sm:px-6 text-white shadow-lg">
+      <div className="pointer-events-none absolute inset-0 opacity-10">
+        <div className="absolute -right-12 -top-12 h-52 w-52 rounded-full bg-white" />
+        <div className="absolute -bottom-20 left-0 h-44 w-44 rounded-full bg-white" />
+      </div>
+      <div className="relative flex flex-wrap items-start justify-between gap-4">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm shadow-inner">
+            <LayoutTemplate className="h-5 w-5 text-white" />
+          </div>
+          <div className="min-w-0">
+            <h2 className="truncate text-lg sm:text-xl font-bold tracking-tight text-white">Leave Templates</h2>
+            <p className="text-xs sm:text-sm text-white/75">
               Configure academic-year leave templates and assign them to staff — multiple templates per staff are supported.
             </p>
           </div>
-          {activeTab === "templates" && (
-            <Button
-              size="sm"
-              onClick={() => setFormOpen(true)}
-              className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white shadow-md gap-1.5"
-            >
-              ➕ Create Template
-            </Button>
-          )}
         </div>
+        {activeTab === "templates" && (
+          <Button
+            size="sm"
+            onClick={() => setFormOpen(true)}
+            className="bg-white text-indigo-700 hover:bg-white/90 shadow-md gap-1.5"
+          >
+            ➕ Create Template
+          </Button>
+        )}
       </div>
+    </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="mb-4 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl gap-1">
-          <TabsTrigger value="templates" className="gap-1.5 text-xs rounded-lg data-[state=active]:bg-emerald-500 data-[state=active]:text-white data-[state=active]:shadow-sm">
-            📋 Templates
-          </TabsTrigger>
-          <TabsTrigger value="assign" className="gap-1.5 text-xs rounded-lg data-[state=active]:bg-blue-500 data-[state=active]:text-white data-[state=active]:shadow-sm">
-            👥 By Designation
-          </TabsTrigger>
-          <TabsTrigger value="staff" className="gap-1.5 text-xs rounded-lg data-[state=active]:bg-violet-500 data-[state=active]:text-white data-[state=active]:shadow-sm">
-            👤 By Staff
-          </TabsTrigger>
-        </TabsList>
+    <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <TabsList className="mb-4 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl gap-1 w-full justify-start">
+        <TabsTrigger value="templates" className="gap-1.5 text-xs rounded-lg data-[state=active]:bg-gradient-to-br data-[state=active]:from-violet-500 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-sm">
+          📋 Templates
+        </TabsTrigger>
+        <TabsTrigger value="assign" className="gap-1.5 text-xs rounded-lg data-[state=active]:bg-gradient-to-br data-[state=active]:from-violet-500 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-sm">
+          👥 By Designation
+        </TabsTrigger>
+        <TabsTrigger value="staff" className="gap-1.5 text-xs rounded-lg data-[state=active]:bg-gradient-to-br data-[state=active]:from-violet-500 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-sm">
+          👤 By Staff
+        </TabsTrigger>
+      </TabsList>
 
-        {/* ── Tab 1: Templates ── */}
-        <TabsContent value="templates" className="space-y-4 m-0">
+      {/* ── Tab 1: Templates ── */}
+      <TabsContent value="templates" className="space-y-4 m-0">
           {templatesLoading ? (
             <div className="flex justify-center py-20">
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -405,7 +407,7 @@ export default function LeaveTemplateManager() {
 
         {/* ── Tab 2: By Designation (Bulk Assign) ── */}
         <TabsContent value="assign" className="m-0">
-          <Card className="max-w-xl">
+          <Card className="max-w-2xl mx-auto">
             <CardHeader>
               <CardTitle>Bulk Assign by Designation</CardTitle>
               <CardDescription>
@@ -483,7 +485,7 @@ export default function LeaveTemplateManager() {
 
         {/* ── Tab 3: By Staff (Individual + Many-to-One) ── */}
         <TabsContent value="staff" className="m-0 space-y-4">
-          <Card className="max-w-2xl">
+          <Card className="max-w-3xl mx-auto">
             <CardHeader>
               <CardTitle>Staff Leave Policy Manager</CardTitle>
               <CardDescription>

@@ -166,7 +166,7 @@ export default function PromotionManagement() {
   return (
     <div className="space-y-6">
       {/* Hero Header */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 via-blue-600 to-cyan-700 p-5 text-white shadow-lg">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-700 p-5 text-white shadow-lg">
         <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/10 blur-xl" />
         <div className="relative flex items-center gap-3">
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/20 text-2xl shadow-inner">
@@ -205,7 +205,7 @@ export default function PromotionManagement() {
         </TabsContent>
 
         <TabsContent value="initiate" className="m-0">
-          <Card className="max-w-2xl">
+          <Card className="max-w-2xl mx-auto">
              <CardHeader>
                 <CardTitle>Initiate New Promotion</CardTitle>
                 <CardDescription>

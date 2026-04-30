@@ -200,7 +200,7 @@ export default function LeaveManagement() {
   return (
     <div className="space-y-6">
       {/* Hero Header */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-violet-600 via-purple-600 to-blue-700 p-5 text-white shadow-lg">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-700 p-5 text-white shadow-lg">
         <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/10 blur-xl" />
         <div className="absolute -bottom-4 -left-4 h-20 w-20 rounded-full bg-blue-500/20 blur-xl" />
         <div className="relative flex flex-wrap items-center justify-between gap-4">

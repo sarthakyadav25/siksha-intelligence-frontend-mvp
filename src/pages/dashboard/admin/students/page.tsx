@@ -139,31 +139,46 @@ export default function StudentsPage() {
       setLoading(true);
       try {
         // We fetch a large batch to handle filtering, searching, and sorting locally.
+        // Backend caps at 100 per page, so we need to fetch multiple pages for larger datasets.
         const res = await adminService.listStudents({
           page: 0,
-          size: 100, // Backend caps at 100
+          size: 100,
         });
         
-        let data = res.data.content;
+        // Handle both old and new Spring Data Page formats
+        // Old: { content: [...], totalElements: 200, totalPages: 2 }
+        // New Spring Boot 3.x: { content: [...], page: { totalElements: 200, totalPages: 2 } }
+        const responseData = res.data as any; // Cast to handle different formats
+        let data: StudentSummaryDTO[] = (responseData.content || []) as StudentSummaryDTO[];
         
-        // Fetch remaining pages if there's more than 100 students
-        // Calculate totalPages safely from totalElements if the `totalPages` property is missing
-        const totalPages = res.data.totalPages || Math.ceil(res.data.totalElements / 100) || 1;
-        if (totalPages > 1) {
-          const promises = [];
+        // Extract pagination info from either root or nested 'page' object
+        const pageInfo = responseData.page || responseData;
+        const totalElementsFromBackend = (pageInfo.totalElements ?? pageInfo.total) || data.length;
+        const totalPagesFromBackend = pageInfo.totalPages || Math.ceil(totalElementsFromBackend / 100) || 1;
+        
+        // Calculate total pages needed to fetch all students
+        const totalPages = totalPagesFromBackend || 1;
+        
+        // Fetch remaining pages sequentially if there's more than 100 students total
+        if (totalPages > 1 && data.length < totalElementsFromBackend) {
           for (let i = 1; i < totalPages; i++) {
-            promises.push(
-              adminService.listStudents({ page: i, size: 100 }).then((r) => r.data.content)
-            );
+            try {
+              const pageRes = await adminService.listStudents({ page: i, size: 100 });
+              const pageData = (pageRes.data.content || []) as StudentSummaryDTO[];
+              if (pageData.length > 0) {
+                data = data.concat(pageData);
+              }
+            } catch (pageError) {
+              console.error(`Failed to fetch students page ${i}:`, pageError);
+              // Continue with partial data rather than failing completely
+            }
           }
-          const otherPages = await Promise.all(promises);
-          data = data.concat(...otherPages);
         }
         
         // 1. Local Search Filter
         if (searchQuery) {
           const q = searchQuery.toLowerCase();
-          data = data.filter(s => 
+          data = data.filter((s: StudentSummaryDTO) => 
             s.firstName?.toLowerCase().includes(q) ||
             s.lastName?.toLowerCase().includes(q) ||
             s.email?.toLowerCase().includes(q) ||
@@ -173,16 +188,16 @@ export default function StudentsPage() {
 
         // 2. Local Class Filter (reqClassFilter is now the exact class name like "Class 1")
         if (reqClassFilter) {
-          data = data.filter(s => s.className === reqClassFilter);
+          data = data.filter((s: StudentSummaryDTO) => s.className === reqClassFilter);
         }
 
         // 3. Local Section Filter
         if (reqSectionFilter) {
-          data = data.filter(s => s.sectionName === reqSectionFilter);
+          data = data.filter((s: StudentSummaryDTO) => s.sectionName === reqSectionFilter);
         }
         
         // 4. Local Multi-Sort: Classwise then Rollwise
-        data = [...data].sort((a, b) => {
+        data = [...data].sort((a: StudentSummaryDTO, b: StudentSummaryDTO) => {
           const classA = a.className || "";
           const classB = b.className || "";
           if (classA !== classB) {

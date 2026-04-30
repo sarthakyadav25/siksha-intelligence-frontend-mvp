@@ -422,6 +422,25 @@ export default function ShiftManagement() {
 
   return (
     <div className="space-y-6">
+      {/* ── Unified Hero Header ──────────────────────────────────── */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-700 px-5 py-5 sm:px-6 text-white shadow-lg">
+        <div className="pointer-events-none absolute inset-0 opacity-10">
+          <div className="absolute -right-12 -top-12 h-52 w-52 rounded-full bg-white" />
+          <div className="absolute -bottom-20 left-0 h-44 w-44 rounded-full bg-white" />
+        </div>
+        <div className="relative flex items-center gap-3">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm text-2xl shadow-inner">
+            ⏰
+          </div>
+          <div className="min-w-0">
+            <h2 className="truncate text-lg sm:text-xl font-bold tracking-tight text-white">Shift Management</h2>
+            <p className="text-xs sm:text-sm text-white/75">
+              Define shifts, working hours, grace periods and assign staff to schedules
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* ── Shift Definitions ───────────────────────────────────── */}
       <Card className="overflow-hidden">
         <div className="h-1.5 bg-gradient-to-r from-amber-400 via-orange-400 to-red-400" />

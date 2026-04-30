@@ -28,6 +28,7 @@ const LoginPage = lazy(() => import('@/features/auth/LoginPage'))
 const ResetPasswordPage = lazy(() => import('@/features/auth/ResetPasswordPage'))
 const ApplicantSignupPage = lazy(() => import('@/features/auth/ApplicantSignupPage'))
 const HomePage = lazy(() => import('@/pages/HomePage'))
+const AccessDeniedPage = lazy(() => import('@/pages/AccessDenied'))
 
 const AdminOverview = lazy(() => import('@/pages/dashboard/admin/page'))
 const StudentsPage = lazy(() => import('@/pages/dashboard/admin/students/page'))
@@ -176,6 +177,12 @@ export default function App() {
               {withRouteSuspense(<ApplicantSignupPage />)}
             </GuestOnly>
           }
+        />
+
+        {/* 403 Access Denied page */}
+        <Route
+          path="/403"
+          element={withRouteSuspense(<AccessDeniedPage />)} 
         />
 
         {/* Protected routes: require authentication */}

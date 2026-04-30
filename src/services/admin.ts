@@ -63,13 +63,20 @@ export interface StaffSummaryDTO {
 
 export interface PageResponse<T> {
   content: T[];
-  totalElements: number;
-  totalPages: number;
-  number: number;          // current page (0-indexed)
-  size: number;
-  first: boolean;
-  last: boolean;
-  empty: boolean;
+  totalElements?: number;  // Old Spring Boot format (at root level)
+  totalPages?: number;
+  number?: number;          // current page (0-indexed)
+  size?: number;
+  first?: boolean;
+  last?: boolean;
+  empty?: boolean;
+  // New Spring Boot 3.x format - pagination info in nested 'page' object
+  page?: {
+    totalElements: number;
+    totalPages: number;
+    number: number;
+    size: number;
+  };
 }
 
 export interface ListStudentsParams {
